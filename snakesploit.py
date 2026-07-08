@@ -43,8 +43,64 @@ Examples:
     parser.add_argument("--gen-cves", action="store_true", help="Generate modules from CVEs")
     parser.add_argument("--search", type=str, help="Search modules")
     parser.add_argument("--non-interactive", action="store_true", help="Don't start console")
+    parser.add_argument("--activate", type=str, help="Activate SnakeSploit with a license key", metavar="LICENSE_KEY")
+    parser.add_argument("--deactivate", action="store_true", help="Deactivate this device")
+    parser.add_argument("--license-status", action="store_true", help="Show license status")
 
     args = parser.parse_args()
+
+    # ── License handling ──────────────────────────────────
+    from core.license import LicenseManager, RESEARCHER_CONTACT
+
+    # LicenseSeat API key — from environment or built-in
+    api_key = os.environ.get("SNAKESPLOIT_LICENSE_API_KEY",
+        "pk_live_8FfZppC5Vtd3xaG7zLHz5ZgivbJHcXcoJ")
+    license_mgr = LicenseManager(api_key=api_key)
+
+    if args.activate:
+        result = license_mgr.activate(args.activate)
+        if result["success"]:
+            print(f"  [+] {result['message']}")
+        else:
+            print(f"  [-] {result['message']}")
+        return
+
+    if args.deactivate:
+        result = license_mgr.deactivate()
+        print(f"  [+] {result['message']}")
+        return
+
+    if args.license_status:
+        info = license_mgr.get_license_info()
+        if info["status"] == "active":
+            print(f"  [+] License active")
+            print(f"      Key: {info['license_key']}")
+            print(f"      Activated: {info['activated_at']}")
+        else:
+            print(f"  [!] Not licensed")
+            print(RESEARCHER_CONTACT)
+        return
+
+    # For other CLI actions (--update, --cve stats, etc.), skip license check
+    # But for interactive console, check license
+    if not args.update and not args.cve and not args.module_list \
+       and not args.gen_cves and not args.search and not args.non_interactive:
+        validation = license_mgr.validate()
+        if not validation["valid"]:
+            print(RESEARCHER_CONTACT)
+            if not args.non_interactive:
+                response = input("\nEnter license key (or press Enter to exit): ").strip()
+                if response:
+                    result = license_mgr.activate(response)
+                    if result["success"]:
+                        print(f"  [+] {result['message']}")
+                    else:
+                        print(f"  [-] {result['message']}")
+                        return
+                else:
+                    return
+
+    # ── /License handling ─────────────────────────────────
 
     # Run update pipeline
     if args.update:

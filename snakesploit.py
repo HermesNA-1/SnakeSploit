@@ -55,7 +55,7 @@ Examples:
     # LicenseSeat API key — from environment or built-in
     api_key = os.environ.get("SNAKESPLOIT_LICENSE_API_KEY",
         "pk_live_8FfZppC5Vtd3xaG7zLHz5ZgivbJHcXcoJ")
-    license_mgr = LicenseManager(api_key=api_key)
+    license_mgr = LicenseManager(api_key=api_key, product_slug="hermesna")
 
     if args.activate:
         result = license_mgr.activate(args.activate)

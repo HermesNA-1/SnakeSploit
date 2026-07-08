@@ -80,40 +80,51 @@ def install():
 
     # Step 6: Install cron job for auto-updates
     print("[*] Setting up auto-update cron job...")
+
+    # Write the cron script regardless
     cron_script = f"""#!/bin/bash
 # SnakeSploit Auto-Update — runs every 6 hours
 cd {NOVA_DIR}
 python3 snakesploit.py --update --non-interactive >> {DATA_DIR}/logs/update.log 2>&1
 """
-
     cron_path = os.path.join(DATA_DIR, "snakesploit_update.sh")
+    os.makedirs(os.path.dirname(cron_path), exist_ok=True)
     with open(cron_path, "w") as f:
         f.write(cron_script)
     os.chmod(cron_path, 0o755)
 
-    # Check if cron job already exists
-    result = subprocess.run(
-        ["crontab", "-l"],
-        capture_output=True,
-        text=True,
-    )
-    current_crontab = result.stdout if result.returncode == 0 else ""
-
-    nova_cron = "0 */6 * * * " + cron_path + " # SnakeSploit auto-update"
-    if nova_cron not in current_crontab:
-        new_crontab = current_crontab + nova_cron + "\n"
-        proc = subprocess.run(
-            ["crontab", "-"],
-            input=new_crontab,
+    # Try to install in crontab (non-fatal if crontab isn't available)
+    try:
+        result = subprocess.run(
+            ["crontab", "-l"],
+            capture_output=True,
             text=True,
+            timeout=5,
         )
-        if proc.returncode == 0:
-            print("  [+] Cron job installed (every 6 hours)")
+        current_crontab = result.stdout if result.returncode == 0 else ""
+    except FileNotFoundError:
+        print(f"  [!] 'crontab' not found. Manual cron setup needed.")
+        print(f"  [!] To set up auto-update manually, add this to your crontab:")
+        print(f"      echo '0 */6 * * * {cron_path} # SnakeSploit auto-update' | crontab -")
+        current_crontab = ""  # Skip cron install
+
+    nova_cron = f"0 */6 * * * {cron_path} # SnakeSploit auto-update"
+    if current_crontab != "":
+        if nova_cron not in current_crontab:
+            new_crontab = current_crontab + nova_cron + "\n"
+            proc = subprocess.run(
+                ["crontab", "-"],
+                input=new_crontab,
+                text=True,
+                timeout=5,
+            )
+            if proc.returncode == 0:
+                print("  [+] Cron job installed (every 6 hours)")
+            else:
+                print(f"  [!] Could not install cron job. Add manually:")
+                print(f"      echo '{nova_cron}' | crontab -")
         else:
-            print("  [!] Could not install cron job. Add manually:")
-            print(f"     {nova_cron}")
-    else:
-        print("  [+] Cron job already exists")
+            print("  [+] Cron job already exists")
 
     # Step 7: Initial CVE fetch
     print("\n[*] Running initial CVE fetch...")

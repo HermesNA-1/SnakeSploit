@@ -239,7 +239,7 @@ RESEARCHER_CONTACT = """
 ║  security researchers only.                          ║
 ║                                                      ║
 ║  To request access:                                  ║
-║    1. Message @Nirbhik_Acharya on Telegram           ║
+║    1. Email HermesNickNA@proton.me                   ║
 ║       with your name, email, and research purpose    ║
 ║                                                      ║
 ║    2. Include proof of your research affiliation     ║

@@ -31,6 +31,68 @@ Built by **[Nick](https://github.com/HermesNA-1)** — your AI agent on Raspberr
 
 ---
 
+## 🔐 License System
+
+SnakeSploit is **restricted to authorized security researchers only**. It uses **[LicenseSeat](https://licenseseat.com)** for key management.
+
+### For Researchers
+
+```bash
+# Request access
+# Email HermesNickNA@proton.me with your name, purpose, and proof of affiliation
+
+# Activate your key
+snakesploit --activate YOUR-LICENSE-KEY
+
+# Check license status
+snakesploit --license-status
+
+# Deactivate on shared machines (frees your seat)
+snakesploit --deactivate
+
+# Or from inside the console
+snakesploit > deactivate
+snakesploit > logout
+```
+
+### For Administrators
+
+1. Go to **LicenseSeat dashboard → HermesNA** product
+2. Click **Licenses → Issue License** to create keys
+3. Set seat count per key (5 seats default)
+4. DM the key to the approved researcher
+5. **To revoke** — just delete/suspend the key in the dashboard
+   - Revoked users are **auto-kicked within 3 minutes** (background validation)
+   - Every launch checks online — no 24h cache
+
+### License Flow
+
+```
+Researcher                    You (Admin)                    LicenseSeat
+    │                            │                              │
+    ├── Runs snakesploit ────────┤                              │
+    │   "No license"             │                              │
+    │   "Email admin to          │                              │
+    │    request access"         │                              │
+    │                            │                              │
+    ├── Emails proof ────────────┤                              │
+    │                            ├── Creates key ──────────────►│
+    │                            ├── DMs the key                │
+    │                            │                              │
+    ├── Runs --activate KEY ─────┤─── validates ───────────────►│
+    │   ✅ Access granted        │                              │
+    │                            │                              │
+    ├── [3 min later] ───────────┤─── re-validates ────────────►│
+    │   Still valid ✅           │                              │
+    │                            │                              │
+    ├── You revoke ──────────────┤                              │
+    │   [within 3 min]           │                              │
+    │   ❌ LICENSE REVOKED       │                              │
+    │   Console exits            │                              │
+```
+
+---
+
 ## ✨ Features
 
 | Feature | Description |
@@ -46,6 +108,7 @@ Built by **[Nick](https://github.com/HermesNA-1)** — your AI agent on Raspberr
 | 🐚 **Session Handling** | Listener mode, interactive shell sessions, multi-session management |
 | 📋 **Loot Storage** | Automatically saves banners, scan results, and shell output |
 | 🕐 **Cron Auto-Update** | Every 6 hours — fetch CVEs → find PoCs → generate modules |
+| 🔐 **License Control** | LicenseSeat integration — activate, revoke, deactivate, auto-kick on revocation |
 
 ---
 
@@ -58,6 +121,9 @@ cd SnakeSploit
 
 # Run the installer (sets up symlink, cron, and initial CVE fetch)
 python3 install.py
+
+# Activate your license (researchers only — request a key first)
+snakesploit --activate YOUR-KEY-HERE
 
 # Launch the console
 snakesploit
@@ -150,6 +216,8 @@ snakesploit (smb_version_scanner) > run
 | | `exit` / `quit` | Exit SnakeSploit |
 | | `clear` | Clear screen |
 | | `shell <cmd>` | Run shell command |
+| **License** | `deactivate` | Deactivate this device and free your license seat |
+| | `logout` | Alias for deactivate |
 | **Update** | `update [days]` | Fetch CVEs from NVD |
 | | `update full [days]` | Full pipeline: CVEs → PoCs → modules |
 | | `pocs <CVE-ID>` | Search PoCs for a specific CVE |
@@ -177,52 +245,17 @@ snakesploit (smb_version_scanner) > run
 
 ---
 
-## 🔄 Auto-Update Pipeline
-
-SnakeSploit's most powerful feature — it keeps itself fresh:
-
-```mermaid
-graph LR
-    A[NVD API] -->|fetch CVEs| B[CVE Cache]
-    B -->|search PoCs| C[GitHub / Exploit-DB]
-    C -->|found PoCs| D[Module Generator]
-    B -->|high severity| D
-    D -->|create .py modules| E[Generated Modules]
-    E -->|reload| F[SnakeSploit Console]
-```
-
-### How it works:
-
-1. **Every 6 hours** (cron) → fetches CVEs from National Vulnerability Database
-2. **Prioritizes** Critical/High severity vulnerabilities
-3. **Searches GitHub** for proof-of-concept code
-4. **Generates Python modules** — one per CVE — with descriptions, references, and stub exploit code
-5. **Reloads** into the console — ready to `use` immediately
-
-### Manual trigger:
-```bash
-# Just CVEs
-snakesploit --update
-
-# Full pipeline (CVEs → PoCs → Modules)
-snakesploit --full
-
-# From the console
-snakesploit > update full 7
-```
-
----
-
 ## 🏗️ Architecture
 
 ```
 ~/snakesploit/
-├── snakesploit.py          # Entry point + CLI argparser
+├── snakesploit.py          # Entry point + CLI argparser + license check
 ├── console.py              # Interactive console (cmd.Cmd-based)
 ├── install.py              # Installer + cron setup
 ├── test_snakesploit.py     # 51-test comprehensive test suite
 │
 ├── core/
+│   ├── license.py          # LicenseSeat client — activate, validate, deactivate
 │   ├── module.py           # ModuleManager, NovaModule base class
 │   ├── target.py           # TargetManager, Target, Service models
 │   └── session.py          # SessionManager, NovaSession
@@ -246,13 +279,12 @@ snakesploit > update full 7
 │   └── payloads.py         # PayloadGenerator (7 payload types)
 │
 └── ~/.snakesploit/         # Runtime data directory
+    ├── license.json        # Cached license state
     ├── cve_cache/          # CVE database (JSON)
     ├── poc_cache/          # PoC index
     ├── loot/               # Captured data
     └── logs/               # Auto-update logs
 ```
-
----
 
 ## 🛡️ Disclaimer
 

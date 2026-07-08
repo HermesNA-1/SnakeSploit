@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Nova Installer — sets up Nova framework, cron jobs, and dependencies.
+SnakeSploit Installer — sets up framework, symlink, cron, and initial CVE fetch.
+Auto-detects its own directory so it works from any clone path.
 """
 
 import os
@@ -8,7 +9,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-NOVA_DIR = os.path.expanduser("~/snakesploit")
+# Auto-detect the SnakeSploit directory (works even if cloned to ~/SnakeSploit, ~/snakesploit, etc.)
+NOVA_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.expanduser("~/.snakesploit")
 
 
 def run(cmd: str) -> bool:
@@ -28,18 +31,22 @@ def install():
     # Step 1: Create directories
     print("[*] Creating SnakeSploit directories...")
     dirs = [
-        "~/.snakesploit",
-        "~/.snakesploit/cve_cache",
-        "~/.snakesploit/poc_cache",
-        "~/.snakesploit/loot",
-        "~/.snakesploit/logs",
+        os.path.join(DATA_DIR, "cve_cache"),
+        os.path.join(DATA_DIR, "poc_cache"),
+        os.path.join(DATA_DIR, "loot"),
+        os.path.join(DATA_DIR, "logs"),
     ]
     for d in dirs:
-        os.makedirs(os.path.expanduser(d), exist_ok=True)
+        os.makedirs(d, exist_ok=True)
 
     # Step 2: Make entry point executable
     print("[*] Making executable...")
     entry_path = os.path.join(NOVA_DIR, "snakesploit.py")
+    if not os.path.exists(entry_path):
+        print(f"  [!] snakesploit.py not found at {entry_path}")
+        print(f"  [!] Current directory: {NOVA_DIR}")
+        print(f"  [!] Files: {os.listdir(NOVA_DIR)}")
+        return
     os.chmod(entry_path, 0o755)
 
     # Step 3: Create symlink
@@ -76,10 +83,10 @@ def install():
     cron_script = f"""#!/bin/bash
 # SnakeSploit Auto-Update — runs every 6 hours
 cd {NOVA_DIR}
-python3 snakesploit.py --update --non-interactive >> ~/.snakesploit/logs/update.log 2>&1
+python3 snakesploit.py --update --non-interactive >> {DATA_DIR}/logs/update.log 2>&1
 """
 
-    cron_path = os.path.expanduser("~/.snakesploit/snakesploit_update.sh")
+    cron_path = os.path.join(DATA_DIR, "snakesploit_update.sh")
     with open(cron_path, "w") as f:
         f.write(cron_script)
     os.chmod(cron_path, 0o755)
@@ -125,8 +132,8 @@ python3 snakesploit.py --update --non-interactive >> ~/.snakesploit/logs/update.
 ║  Run:  snakesploit --full (pipeline) ║
 ║                                      ║
 ║  Modules: {NOVA_DIR}/modules/        ║
-║  CVEs:    ~/.snakesploit/cve_cache/  ║
-║  Loot:    ~/.snakesploit/loot/       ║
+║  CVEs:    {DATA_DIR}/cve_cache/  ║
+║  Loot:    {DATA_DIR}/loot/       ║
 ║  Auto-update: every 6h via cron      ║
 ╚══════════════════════════════════════╝
     """)

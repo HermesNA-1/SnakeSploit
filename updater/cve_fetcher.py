@@ -52,22 +52,44 @@ class CVEUpdater:
 
     def _api_request(self, url: str) -> Optional[dict]:
         """Make a rate-limited request to NVD API."""
-        try:
-            req = urllib.request.Request(url, headers={
-                "User-Agent": self.USER_AGENT,
-            })
-            with urllib.request.urlopen(req, timeout=30) as resp:
-                return json.loads(resp.read().decode())
-        except urllib.error.HTTPError as e:
-            if e.code == 403:
-                print("  [!] NVD API rate limit hit. Waiting 10s...")
-                time.sleep(10)
-                return self._api_request(url)
-            print(f"  [!] NVD API error {e.code}: {e.reason}")
-            return None
-        except Exception as e:
-            print(f"  [!] NVD API request failed: {e}")
-            return None
+        import ssl
+        ctx = ssl.create_default_context()
+
+        # Try a few SSL alternatives if the default fails
+        for attempt, ssl_context in enumerate([
+            None,  # Default SSL (system certs)
+            ctx,   # Explicit default context
+        ]):
+            try:
+                req = urllib.request.Request(url, headers={
+                    "User-Agent": self.USER_AGENT,
+                })
+                if ssl_context:
+                    with urllib.request.urlopen(req, timeout=30, context=ssl_context) as resp:
+                        return json.loads(resp.read().decode())
+                else:
+                    with urllib.request.urlopen(req, timeout=30) as resp:
+                        return json.loads(resp.read().decode())
+            except urllib.error.HTTPError as e:
+                if e.code == 403:
+                    print("  [!] NVD API rate limit hit. Waiting 10s...")
+                    time.sleep(10)
+                    return self._api_request(url)
+                print(f"  [!] NVD API error {e.code}: {e.reason}")
+                return None
+            except urllib.error.URLError as e:
+                # If SSL fails, try without cert verification
+                if "certificate verify" in str(e).lower() and attempt == 0:
+                    print("  [*] SSL verification failed — trying without cert check...")
+                    ctx.check_hostname = False
+                    ctx.verify_mode = ssl.CERT_NONE
+                    continue
+                print(f"  [!] NVD API request failed: {e}")
+                return None
+            except Exception as e:
+                print(f"  [!] NVD API request failed: {e}")
+                return None
+        return None
 
     def fetch_recent(self, days_back: int = 7, limit: int = 100) -> int:
         """

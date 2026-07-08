@@ -143,7 +143,7 @@ class SnakeSploitConsole(cmd.Cmd):
 
 {Colors.CYAN}─── Core Commands ───{Colors.RESET}
   help                  Show this help
-  exit / quit           Exit Nova
+  exit / quit           Exit SnakeSploit
 
 {Colors.CYAN}─── Update System (CVE + PoC) ───{Colors.RESET}
   update [days]        Fetch CVEs from NVD (last N days, default 7)
@@ -752,6 +752,12 @@ class SnakeSploitConsole(cmd.Cmd):
         except ValueError:
             print(f"{Colors.RED}[-] Invalid port{Colors.RESET}")
             return
+
+        # Check if a listener is already running on this port
+        for sid, s in self.session_manager.list_active().items():
+            if s.target_port == port and s.session_type == "reverse":
+                print(f"{Colors.YELLOW}[!] Listener already active on port {port} (session {sid}){Colors.RESET}")
+                return
 
         thread = threading.Thread(
             target=self._listener_thread,

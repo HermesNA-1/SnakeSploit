@@ -183,6 +183,7 @@ class SnakeSploitConsole(cmd.Cmd):
 
 {Colors.CYAN}─── System ───{Colors.RESET}
   shell <command>      Run a shell command
+  deactivate / logout  Deactivate this device and free your license seat
   clear                Clear the screen
   banner               Show the banner
 """)
@@ -212,6 +213,26 @@ class SnakeSploitConsole(cmd.Cmd):
             print("Usage: shell <command>")
             return
         os.system(arg)
+
+    def do_deactivate(self, arg):
+        """Deactivate this device and free your license seat. Usage: deactivate"""
+        if not self._license_mgr:
+            print(f"{Colors.YELLOW}[!] No license manager available.{Colors.RESET}")
+            return
+        result = self._license_mgr.deactivate()
+        if result.get("success", True):
+            print(f"{Colors.GREEN}[+] Device deactivated. License seat freed.{Colors.RESET}")
+            print(f"{Colors.GREEN}[+] Exiting SnakeSploit.{Colors.RESET}")
+            self._running = False
+            self.target_manager.save()
+            self.session_manager.save()
+            return True
+        else:
+            print(f"{Colors.YELLOW}[!] {result.get('message', 'Deactivation failed')}{Colors.RESET}")
+
+    def do_logout(self, arg):
+        """Alias for deactivate — frees your license seat. Usage: logout"""
+        return self.do_deactivate(arg)
 
     # ──────────────────────────────────────────
     # Update system commands

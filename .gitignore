@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+*.egg
+dist/
+build/
+.snakesploit/
+data/cve_cache/
+data/poc_cache/
+*.json
+!manifest.json
+.env
+*.log

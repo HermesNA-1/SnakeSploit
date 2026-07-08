@@ -194,12 +194,12 @@ Examples:
         if not args.non_interactive:
             print("\nStarting console...")
             from console import SnakeSploitConsole
-            SnakeSploitConsole().run()
+            SnakeSploitConsole(license_mgr=license_mgr).run()
         return
 
     # Default: start console
     from console import SnakeSploitConsole
-    SnakeSploitConsole().run()
+    SnakeSploitConsole(license_mgr=license_mgr).run()
 
 
 if __name__ == "__main__":

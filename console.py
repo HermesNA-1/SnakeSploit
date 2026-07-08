@@ -62,7 +62,7 @@ class SnakeSploitConsole(cmd.Cmd):
     intro = f"{BANNER}\n{Colors.GREEN}Type 'help' for commands | 'update' to pull CVEs | 'exit' to quit{Colors.RESET}\n"
     prompt = f"{Colors.GREEN}snakesploit{Colors.RESET} > "
 
-    def __init__(self):
+    def __init__(self, license_mgr=None):
         super().__init__()
         self.module_manager = ModuleManager()
         self.target_manager = TargetManager()
@@ -75,6 +75,14 @@ class SnakeSploitConsole(cmd.Cmd):
         self._active_module_name: str = ""
         self._listener_threads: Dict[str, threading.Thread] = {}
         self._running = True
+        self._license_mgr = license_mgr
+
+        # Start background license validation (checks every 3 min)
+        if self._license_mgr and self._license_mgr.is_licensed():
+            if not getattr(self, '_license_thread_started', False):
+                self._license_thread_started = True
+            t = threading.Thread(target=self._license_check_loop, daemon=True)
+            t.start()
 
         # Load state
         self.target_manager.load()
@@ -98,6 +106,26 @@ class SnakeSploitConsole(cmd.Cmd):
         else:
             self.prompt = f"{Colors.GREEN}snakesploit{Colors.RESET} > "
         return stop
+
+    def _license_check_loop(self):
+        """Background thread: re-validates license every 3 minutes."""
+        import time as ttime
+        ttime.sleep(10)  # Initial delay to let console start
+        while self._running:
+            try:
+                if self._license_mgr and self._license_mgr.is_licensed():
+                    result = self._license_mgr.validate()
+                    if result.get("revoked"):
+                        print(f"\n{Colors.RED}[!] LICENSE REVOKED! Access denied.{Colors.RESET}")
+                        print(f"{Colors.RED}    Your license has been revoked by the administrator.{Colors.RESET}")
+                        self._running = False
+                        ttime.sleep(1)
+                        # Exit the process
+                        import os
+                        os._exit(1)
+            except Exception:
+                pass
+            ttime.sleep(180)  # Check every 3 minutes
 
     # ──────────────────────────────────────────
     # Core commands

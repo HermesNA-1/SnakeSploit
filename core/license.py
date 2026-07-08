@@ -105,28 +105,23 @@ class LicenseManager:
         error = result.get("message", "Unknown error") if result else "No response from server"
         return {"success": False, "message": f"License activation failed: {error}"}
 
-    def validate(self) -> Dict[str, Any]:
+    def validate(self, allow_cached: bool = False) -> Dict[str, Any]:
         """
         Check if the current license is still valid.
-        Called on every startup and periodically.
+        Calls LicenseSeat API every time unless allow_cached=True (offline fallback).
         """
         if not self._license_data or not self._license_data.get("license_key"):
             return {"valid": False, "message": "No license key found. Please activate SnakeSploit."}
 
         license_key = self._license_data["license_key"]
 
-        # If we validated recently (within 24h), skip network call
-        last_validated = self._license_data.get("last_validated", "")
-        if last_validated:
-            try:
-                last_time = datetime.fromisoformat(last_validated)
-                hours_since = (datetime.now() - last_time).total_seconds() / 3600
-                if hours_since < 24 and self._license_data.get("valid"):
-                    return {"valid": True, "message": "License valid (cached)", "key": license_key}
-            except ValueError:
-                pass
+        # Offline fallback — only used if we truly can't reach the server
+        if allow_cached:
+            last_validated = self._license_data.get("last_validated", "")
+            if last_validated and self._license_data.get("valid"):
+                return {"valid": True, "message": "License valid (cached — offline mode)", "key": license_key}
 
-        # Online validation
+        # Always validate online (catches revocations immediately)
         result = self._api_request("POST",
             f"/products/{self.product_slug}/licenses/{license_key}/validate"
         )
@@ -137,12 +132,28 @@ class LicenseManager:
             self._save()
             return {"valid": True, "message": "License is valid", "key": license_key}
 
+        # Check if it's a network issue (offline) vs actual revocation
+        if result is None:
+            is_network_error = True
+            error_msg = "No response from license server"
+        else:
+            error_code = result.get("error", {}).get("code", "") if isinstance(result.get("error"), dict) else result.get("error", "")
+            is_network_error = error_code in ("network_error",)
+            error_msg = result.get("message", "License has been revoked or is invalid.")
+
+        if is_network_error and self._license_data.get("valid"):
+            # Network down but previously valid — allow limited use
+            self._license_data["last_validated"] = datetime.now().isoformat()
+            self._save()
+            return {"valid": True, "message": "License valid (offline — can't reach server)", "key": license_key, "offline": True}
+
+        # Actual rejection — mark as invalid immediately
         self._license_data["last_validated"] = datetime.now().isoformat()
         self._license_data["valid"] = False
         self._save()
 
-        error_msg = result.get("message", "License validation failed") if result else "No response"
-        return {"valid": False, "message": error_msg, "key": license_key}
+        error_msg = result.get("message", "License has been revoked or is invalid.") if result else "License validation failed"
+        return {"valid": False, "message": error_msg, "key": license_key, "revoked": True}
 
     def deactivate(self) -> Dict[str, Any]:
         """Deactivate this device (free up a seat)."""

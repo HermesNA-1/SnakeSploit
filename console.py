@@ -146,9 +146,9 @@ class SnakeSploitConsole(cmd.Cmd):
   exit / quit           Exit SnakeSploit
 
 {Colors.CYAN}─── Update System (CVE + PoC) ───{Colors.RESET}
-  update [days]        Fetch CVEs from NVD (last N days, default 7)
-  update full [days]   Full pipeline: CVEs → PoCs → Module Gen
-  update-self          Update SnakeSploit itself from GitHub
+  update [days]        Pull latest code from GitHub + fetch CVEs
+  update full [days]   Pull latest code + full pipeline (CVEs → PoCs → modules)
+  update-self          Just update the code from GitHub (no CVE fetch)
   pocs <cve>           Search PoCs for a specific CVE
   cve stats            Show CVE cache statistics
 
@@ -350,7 +350,38 @@ class SnakeSploitConsole(cmd.Cmd):
             print(f"{Colors.RED}[-] Update failed: {e}{Colors.RESET}")
 
     def do_update(self, arg):
-        """Fetch CVEs from NVD. Usage: update [days] or update full [days]"""
+        """Update everything: pull latest code from GitHub, then fetch CVEs.
+           Usage: update [days] or update full [days]"""
+        import subprocess
+
+        # Step 1: Self-update from GitHub
+        repo_dir = os.path.dirname(os.path.abspath(__file__))
+        print(f"{Colors.CYAN}[*] Step 1: Pulling latest SnakeSploit from GitHub...{Colors.RESET}")
+        try:
+            git_result = subprocess.run(
+                ["git", "pull"],
+                cwd=repo_dir,
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            if git_result.returncode == 0:
+                git_output = git_result.stdout.strip()
+                if "Already up to date" in git_output:
+                    print(f"{Colors.GREEN}  [+] Already up to date{Colors.RESET}")
+                else:
+                    print(f"{Colors.GREEN}  [+] Code updated!{Colors.RESET}")
+                    for line in git_output.split("\n")[:3]:
+                        if line.strip():
+                            print(f"     {line}")
+            else:
+                print(f"{Colors.YELLOW}  [!] Git pull issue: {git_result.stderr[:100]}{Colors.RESET}")
+        except FileNotFoundError:
+            print(f"{Colors.YELLOW}  [!] Git not found — skipping code update{Colors.RESET}")
+        except Exception as e:
+            print(f"{Colors.YELLOW}  [!] Git pull failed: {e}{Colors.RESET}")
+
+        # Step 2: Fetch CVEs
         args = arg.split()
         days = 7
         full = False

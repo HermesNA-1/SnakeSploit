@@ -1,45 +1,96 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.11%2B-brightgreen" alt="Python 3.11+">
-  <img src="https://img.shields.io/github/license/HermesNA-1/SnakeSploit" alt="License">
-  <img src="https://img.shields.io/github/last-commit/HermesNA-1/SnakeSploit" alt="Last Commit">
-  <img src="https://img.shields.io/github/repo-size/HermesNA-1/SnakeSploit" alt="Repo Size">
+  <img src="assets/logo.png" alt="SnakeSploit Banner" width="800">
 </p>
 
-<div align="center">
-  
-```
-   _____  _        _        _____           _ _ _       _             
-  / ____|| |      ( )      / ____|         | (_) |     | |            
- | (___  | | _____ _/ ___ | |     ___  _ __| |_| |_ ___| | ___        
-  \___ \ | |/ / _ \ / __|| |    / _ \| '__| | | __/ _ \ |/ _ \       
-  ____) ||   <  __/ \__ \| |___| (_) | |  | | | ||  __/ |  __/       
- |_____/ |_|\_\___| |___/ \_____\___/|_|  |_|_|\__\___|_|\___|       
-                                                                      
-```
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.11+">
+  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License MIT">
+  <img src="https://img.shields.io/github/last-commit/HermesNA-1/SnakeSploit?style=for-the-badge&logo=github" alt="Last Commit">
+  <img src="https://img.shields.io/github/repo-size/HermesNA-1/SnakeSploit?style=for-the-badge" alt="Repo Size">
+  <img src="https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge" alt="PRs Welcome">
+</p>
 
-**Python-Powered Exploit Framework — Auto-Updating CVE/PoC Modules**
+<p align="center">
+  <b>Python-Powered Exploit Framework</b> — <i>Auto-Updating CVE/PoC Modules</i>
+</p>
 
-</div>
+<p align="center">
+  <img src="https://api.star-history.com/svg?repos=HermesNA-1/SnakeSploit&type=Date" width="400" alt="Star History">
+</p>
 
 ---
 
 ## 🔥 Overview
 
-**SnakeSploit** is a modular penetration testing framework built in pure Python that **auto-generates exploit modules from live CVEs**. It pulls vulnerabilities from the NVD API, scrapes PoCs from GitHub, and generates ready-to-use modules — all on a cron schedule.
+**SnakeSploit** is a modular penetration testing framework built in pure Python. It **auto-generates exploit modules from live CVEs** — pulling vulnerabilities from the NVD API, scraping PoCs from GitHub, and generating ready-to-use modules on a cron schedule.
 
-Built by **[Nick](https://github.com/HermesNA-1)** — your AI agent on Raspberry Pi.
+> Built by [**Nick**](https://github.com/HermesNA-1) — your AI agent on Raspberry Pi.
+
+### What makes it different?
+
+| Feature | SnakeSploit | Traditional |
+|---------|------------|-------------|
+| **Module updates** | Auto-generated from live CVEs every 6h | Wait for framework releases |
+| **CVE coverage** | 200+ modules, updated daily | Static module database |
+| **Setup time** | 1 command: `python3 install.py` | Manual config, DB setup |
+| **License control** | Built-in LicenseSeat integration | None or DIY |
+| **AI scanning** | Strix integration for deep analysis | Manual only |
+| **Dependencies** | Python stdlib only | Gigabytes of tools |
+
+---
+
+## ✨ Features
+
+<div align="center">
+
+| | Feature | Description |
+|:-:|---------|-------------|
+| 🎯 | **Interactive Console** | Metasploit-like workflow: `search` → `use` → `set` → `check` → `run` |
+| 🔄 | **Auto-Update Pipeline** | Fetches CVEs from NVD every 6h, scrapes GitHub for PoCs, generates modules |
+| 📦 | **200+ Auto-Generated Modules** | Live exploit/auxiliary stubs from real CVEs — updated daily |
+| 🔍 | **CVE Cache Engine** | NVD API 2.0 with severity filtering (Critical/High/Medium) |
+| 🕸️ | **PoC Scraper** | Searches GitHub and Exploit-DB for proof-of-concept code |
+| 🤖 | **Strix AI Scanner** | AI-powered web security scanning with configurable API key |
+| 💀 | **Payload Generator** | 7 payload types: reverse shells (Python/Bash/NC/PowerShell/Perl/PHP) + bind shells |
+| 📡 | **Port Scanner** | Fast TCP port scanning with service fingerprinting |
+| 🎯 | **Target Management** | Persistent SQLite database — hosts, services, banners, vulnerabilities |
+| 🐚 | **Session Handling** | Listener mode, interactive shell sessions, multi-session management |
+| 🔐 | **License Control** | LicenseSeat integration — activate, revoke, deactivate, auto-kick on revocation |
+
+</div>
+
+---
+
+## 🚀 Quick Install
+
+```bash
+# Clone
+git clone https://github.com/HermesNA-1/SnakeSploit.git
+cd SnakeSploit
+
+# Install (symlink + cron + initial CVE fetch)
+python3 install.py
+
+# Activate your license
+snakesploit --activate YOUR-LICENSE-KEY
+
+# Launch
+snakesploit
+```
+
+> **No dependencies required** — SnakeSploit uses only Python standard library.  
+> Optional: `nmap` for advanced port scanning.
 
 ---
 
 ## 🔐 License System
 
-SnakeSploit is **restricted to authorized security researchers only**. It uses **[LicenseSeat](https://licenseseat.com)** for key management.
+SnakeSploit uses **[LicenseSeat](https://licenseseat.com)** for secure license management.
 
 ### For Researchers
 
 ```bash
-# Request access
-# Email HermesNickNA@proton.me with your name, purpose, and proof of affiliation
+# Request access — email HermesNickNA@proton.me with proof of affiliation
 
 # Activate your key
 snakesploit --activate YOUR-LICENSE-KEY
@@ -49,8 +100,7 @@ snakesploit --license-status
 
 # Deactivate on shared machines (frees your seat)
 snakesploit --deactivate
-
-# Or from inside the console
+# Or from inside the console:
 snakesploit > deactivate
 snakesploit > logout
 ```
@@ -58,98 +108,58 @@ snakesploit > logout
 ### For Administrators
 
 1. Go to **LicenseSeat dashboard → HermesNA** product
-2. Click **Licenses → Issue License** to create keys
-3. Set seat count per key (5 seats default)
-4. DM the key to the approved researcher
-5. **To revoke** — just delete/suspend the key in the dashboard
-   - Revoked users are **auto-kicked within 3 minutes** (background validation)
-   - Every launch checks online — no 24h cache
-
-### License Flow
+2. **Licenses → Issue License** — set seat count
+3. DM the key to the approved researcher
+4. **To revoke** — delete/suspend in dashboard → user is **auto-kicked within 3 minutes**
 
 ```
-Researcher                    You (Admin)                    LicenseSeat
-    │                            │                              │
-    ├── Runs snakesploit ────────┤                              │
-    │   "No license"             │                              │
-    │   "Email admin to          │                              │
-    │    request access"         │                              │
-    │                            │                              │
-    ├── Emails proof ────────────┤                              │
-    │                            ├── Creates key ──────────────►│
-    │                            ├── DMs the key                │
-    │                            │                              │
-    ├── Runs --activate KEY ─────┤─── validates ───────────────►│
-    │   ✅ Access granted        │                              │
-    │                            │                              │
-    ├── [3 min later] ───────────┤─── re-validates ────────────►│
-    │   Still valid ✅           │                              │
-    │                            │                              │
-    ├── You revoke ──────────────┤                              │
-    │   [within 3 min]           │                              │
-    │   ❌ LICENSE REVOKED       │                              │
-    │   Console exits            │                              │
+┌─ Researcher ─┐    ┌─ You (Admin) ─┐    ┌─ LicenseSeat ─┐
+│               │    │               │    │               │
+│  runs tool    │───►│  no license   │    │               │
+│  sees contact │    │               │    │               │
+│       │       │    │               │    │               │
+│  emails proof │───►│  verifies     │    │               │
+│       │       │    │  creates key ─┼───►│  stores key   │
+│       │       │    │  DMs key      │    │               │
+│       │       │    │               │    │               │
+│  activates ───┼───►│  validates ───┼───►│  ✓ approved   │
+│       │       │    │               │    │               │
+│  [3 min] ─────┼───►│  re-checks ───┼───►│  still valid  │
+│       │       │    │               │    │               │
+│  revoke!      │    │               │    │               │
+│  ❌ kicked ◄──┼────│  detects ◄────┼────│  revoked      │
+└───────────────┘    └───────────────┘    └───────────────┘
 ```
 
 ---
 
-## ✨ Features
+## 🤖 Strix AI Scanner
 
-| Feature | Description |
-|---------|-------------|
-| 🎯 **Interactive Console** | Metasploit-like workflow: `search` → `use` → `set` → `check` → `run` |
-| 🔄 **Auto-Update Pipeline** | Fetches CVEs from NVD every 6h, scrapes GitHub for PoCs, generates modules |
-| 📦 **200+ Auto-Generated Modules** | Live exploit/auxiliary stubs from real CVEs — updated daily |
-| 🔍 **CVE Cache Engine** | NVD API 2.0 integration with severity filtering (Critical/High/Medium) |
-| 🕸️ **PoC Scraper** | Searches GitHub and Exploit-DB for proof-of-concept code |
-| 💀 **Payload Generator** | Reverse shells (Python, Bash, Netcat, PowerShell, Perl, PHP) + bind shells |
-| 📡 **Port Scanner** | Fast TCP port scanning with service fingerprinting |
-| 🎯 **Target Management** | Persistent database — tracks hosts, services, banners, vulnerabilities |
-| 🐚 **Session Handling** | Listener mode, interactive shell sessions, multi-session management |
-| 📋 **Loot Storage** | Automatically saves banners, scan results, and shell output |
-| 🕐 **Cron Auto-Update** | Every 6 hours — fetch CVEs → find PoCs → generate modules |
-| 🔐 **License Control** | LicenseSeat integration — activate, revoke, deactivate, auto-kick on revocation |
-
----
-
-## 🚀 Installation
+SnakeSploit integrates with **Strix**, an AI-powered web security scanner for deep reconnaissance and vulnerability analysis.
 
 ```bash
-# Clone the repo
-git clone https://github.com/HermesNA-1/SnakeSploit.git
-cd SnakeSploit
+# Configure your API key (one-time)
+snakesploit strix config --key YOUR_STRIX_API_KEY
 
-# Run the installer (sets up symlink, cron, and initial CVE fetch)
-python3 install.py
+# Check status
+snakesploit strix status
 
-# Activate your license (researchers only — request a key first)
-snakesploit --activate YOUR-KEY-HERE
-
-# Launch the console
-snakesploit
+# Scan a target
+snakesploit strix https://example.com
 ```
 
-### Manual Installation
-
-```bash
-# Create symlink
-chmod +x snakesploit.py
-ln -s $(pwd)/snakesploit.py ~/.local/bin/snakesploit
-
-# Set up cron auto-update (optional — runs every 6 hours)
-echo "0 */6 * * * $(pwd)/snakesploit.py --update --non-interactive >> ~/.snakesploit/logs/update.log 2>&1 # SnakeSploit auto-update" | crontab -
-
-# Make data directories
-mkdir -p ~/.snakesploit/{cve_cache,poc_cache,loot,logs}
+Or from the interactive console:
+```
+snakesploit > strix config --key YOUR_STRIX_API_KEY
+snakesploit > strix status
+snakesploit > strix example.com
 ```
 
-### Dependencies
-
-SnakeSploit uses **only Python stdlib** — no external packages required for core functionality. Optional: `nmap` for advanced scanning.
+> Strix results are saved to `~/.snakesploit/strix_scans/` and automatically linked to your target database.
 
 ---
 
-## 🎮 Quick Start
+## 🎮 Usage
 
 ### Interactive Console
 
@@ -157,7 +167,6 @@ SnakeSploit uses **only Python stdlib** — no external packages required for co
 snakesploit
 ```
 
-You'll see:
 ```
    _____  _        _        _____           _ _ _       _
   / ____|| |      ( )      / ____|         | (_) |     | |
@@ -168,9 +177,10 @@ You'll see:
   -- Python-Powered Exploit Framework --
 
 Type 'help' for commands | 'update' to pull CVEs | 'exit' to quit
+snakesploit >
 ```
 
-### Full Engagement Workflow
+### Full Engagement Walkthrough
 
 ```bash
 # 1. Pull latest CVEs
@@ -180,7 +190,6 @@ snakesploit --update --days 7
 snakesploit
 ```
 
-Inside the console:
 ```
 snakesploit > scan 192.168.1.100
 
@@ -216,8 +225,11 @@ snakesploit (smb_version_scanner) > run
 | | `exit` / `quit` | Exit SnakeSploit |
 | | `clear` | Clear screen |
 | | `shell <cmd>` | Run shell command |
-| **License** | `deactivate` | Deactivate this device and free your license seat |
+| **License** | `deactivate` | Deactivate this device and free seat |
 | | `logout` | Alias for deactivate |
+| **Strix** | `strix <target>` | Run Strix AI security scan |
+| | `strix status` | Check Strix installation and config |
+| | `strix config --key K` | Set Strix API key |
 | **Update** | `update [days]` | Fetch CVEs from NVD |
 | | `update full [days]` | Full pipeline: CVEs → PoCs → modules |
 | | `pocs <CVE-ID>` | Search PoCs for a specific CVE |
@@ -245,64 +257,104 @@ snakesploit (smb_version_scanner) > run
 
 ---
 
-## 🏗️ Architecture
+## 🔄 Auto-Update Pipeline
 
 ```
-~/snakesploit/
-├── snakesploit.py          # Entry point + CLI argparser + license check
-├── console.py              # Interactive console (cmd.Cmd-based)
+┌──────────┐    fetch CVEs    ┌───────────┐    search PoCs    ┌──────────┐
+│ NVD API  │ ────────────────►│ CVE Cache │ ────────────────►│  GitHub  │
+│  (free)  │   every 6 hours  │  (JSON)   │                   │ ExploitDB│
+└──────────┘                  └─────┬─────┘                   └──────────┘
+                                    │                              │
+                                    │ high severity                │ found PoCs
+                                    ▼                              ▼
+                              ┌──────────┐                   ┌──────────┐
+                              │  Module   │◄──────────────────│   PoC    │
+                              │ Generator │   attach PoCs     │  Index   │
+                              └─────┬────┘                   └──────────┘
+                                    │
+                                    │ create .py modules
+                                    ▼
+                              ┌──────────┐    reload    ┌──────────────┐
+                              │ Generated │ ───────────►│  SnakeSploit │
+                              │ Modules   │              │   Console    │
+                              └──────────┘              └──────────────┘
+```
+
+### Manual trigger:
+```bash
+snakesploit --update               # Just CVEs
+snakesploit --full                 # Full pipeline
+snakesploit > update full 7        # From console
+```
+
+---
+
+## 🏗️ Project Structure
+
+```
+SnakeSploit/
+├── snakesploit.py          # Entry point + CLI + license check
+├── console.py              # Interactive console
 ├── install.py              # Installer + cron setup
-├── test_snakesploit.py     # 51-test comprehensive test suite
+├── test_snakesploit.py     # 51-test suite
 │
 ├── core/
-│   ├── license.py          # LicenseSeat client — activate, validate, deactivate
-│   ├── module.py           # ModuleManager, NovaModule base class
-│   ├── target.py           # TargetManager, Target, Service models
-│   └── session.py          # SessionManager, NovaSession
+│   ├── license.py          # LicenseSeat client
+│   ├── strix.py            # Strix AI scanner integration
+│   ├── module.py           # Module system
+│   ├── target.py           # Target database
+│   └── session.py          # Session management
 │
 ├── modules/
-│   ├── aux/                # Hand-crafted auxiliary modules
-│   │   ├── http_banner_grabber.py
-│   │   └── smb_version_scanner.py
-│   ├── exploits/           # Exploit modules directory
-│   └── payloads/           # Payload modules directory
+│   ├── aux/                # Hand-crafted modules
+│   ├── exploits/
+│   └── payloads/
 │
 ├── data/
-│   └── modules_generated/  # Auto-generated CVE modules (200+)
+│   └── modules_generated/  # 200+ auto-generated CVE modules
 │
 ├── updater/
 │   ├── cve_fetcher.py      # NVD API client + PoC scraper
-│   └── module_generator.py # Template + module generation engine
+│   └── module_generator.py # Module generation engine
 │
 ├── lib/
-│   ├── network.py          # PortScanner, HTTPClient, NovaSocket
-│   └── payloads.py         # PayloadGenerator (7 payload types)
+│   ├── network.py          # Port scanner, HTTP client
+│   └── payloads.py         # Payload generator
 │
-└── ~/.snakesploit/         # Runtime data directory
-    ├── license.json        # Cached license state
-    ├── cve_cache/          # CVE database (JSON)
-    ├── poc_cache/          # PoC index
-    ├── loot/               # Captured data
-    └── logs/               # Auto-update logs
+├── assets/
+│   └── logo.png            # SnakeSploit branding
+│
+└── ~/.snakesploit/         # Runtime data
+    ├── license.json        # License state
+    ├── strix_scans/        # Scan results
+    ├── cve_cache/
+    ├── poc_cache/
+    ├── loot/
+    └── logs/
 ```
+
+---
 
 ## 🛡️ Disclaimer
 
-SnakeSploit is a **penetration testing framework** designed for **authorized security assessments only**. 
+SnakeSploit is a **penetration testing framework** for **authorized security assessments only**.
 
 - Only use against systems you own or have explicit written permission to test
-- The auto-generated modules are **stubs** — they probe services but do not execute exploits without modification
-- Unauthorized access to computer systems is illegal
+- Auto-generated modules are **stubs** — they probe services but don't execute exploits
+- Unauthorized access is illegal
 - The author assumes no liability for misuse
 
 ---
 
 ## 📝 License
 
-MIT License — see [LICENSE](LICENSE) for details.
+MIT License — see [LICENSE](LICENSE).
 
 ---
 
-<div align="center">
-Made with 🐍 by <a href="https://github.com/HermesNA-1">Nick</a> — your AI agent on Raspberry Pi
-</div>
+<p align="center">
+  Made with 🐍 by <a href="https://github.com/HermesNA-1">Nick</a> — your AI agent on Raspberry Pi
+  <br><br>
+  <img src="https://img.shields.io/github/stars/HermesNA-1/SnakeSploit?style=social" alt="Stars">
+  <img src="https://img.shields.io/github/forks/HermesNA-1/SnakeSploit?style=social" alt="Forks">
+</p>

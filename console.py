@@ -181,6 +181,11 @@ class SnakeSploitConsole(cmd.Cmd):
   sessions -i <id>     Interact with a session
   sessions -k <id>     Kill a session
 
+{Colors.CYAN}─── Strix AI Scanner ───{Colors.RESET}
+  strix <target>       Run Strix AI security scan against a target
+  strix status         Check Strix installation status
+  strix config --key K Configure your Strix API key
+
 {Colors.CYAN}─── System ───{Colors.RESET}
   shell <command>      Run a shell command
   deactivate / logout  Deactivate this device and free your license seat
@@ -233,6 +238,79 @@ class SnakeSploitConsole(cmd.Cmd):
     def do_logout(self, arg):
         """Alias for deactivate — frees your license seat. Usage: logout"""
         return self.do_deactivate(arg)
+
+    # ──────────────────────────────────────────
+    # Strix commands
+    # ──────────────────────────────────────────
+
+    def do_strix(self, arg):
+        """Strix AI security scanner. Usage:
+  strix <target>         Scan a target (URL or IP)
+  strix config --key K   Set your Strix API key
+  strix config --remove  Remove Strix API key
+  strix status           Check Strix installation and config"""
+        from core.strix import StrixEngine
+        strix = StrixEngine()
+
+        args = arg.strip().split()
+        if not args:
+            print(f"\n{Colors.BOLD}Strix AI Security Scanner{Colors.RESET}")
+            print(f"  Usage:")
+            print(f"    {Colors.CYAN}strix <target>{Colors.RESET}         Run a scan against a target")
+            print(f"    {Colors.CYAN}strix config --key K{Colors.RESET}   Set your Strix API key")
+            print(f"    {Colors.CYAN}strix status{Colors.RESET}          Check installation status")
+            print()
+            return
+
+        if args[0] == "config" and len(args) >= 3 and args[1] == "--key":
+            api_key = args[2]
+            result = strix.set_api_key(api_key)
+            if result["success"]:
+                print(f"{Colors.GREEN}[+] {result['message']}{Colors.RESET}")
+            else:
+                print(f"{Colors.RED}[-] {result['message']}{Colors.RESET}")
+            return
+
+        if args[0] == "config" and "--remove" in args:
+            result = strix.remove_api_key()
+            print(f"{Colors.YELLOW}[!] {result['message']}{Colors.RESET}")
+            return
+
+        if args[0] == "status":
+            status = strix.get_status()
+            print(f"\n{Colors.BOLD}Strix Status{Colors.RESET}")
+            print(f"  Installed:     {Colors.GREEN}Yes{Colors.RESET} at {status['runner_path']}" if status["installed"] else f"  Installed:     {Colors.RED}No{Colors.RESET}")
+            print(f"  API Key:       {Colors.GREEN}Configured{Colors.RESET}" if status["has_api_key"] else f"  API Key:       {Colors.RED}Not set{Colors.RESET}")
+            print(f"  Last Updated:  {status.get('last_updated', 'never')}")
+            if not status["installed"]:
+                print(f"\n  {Colors.YELLOW}[!] Strix is not installed on this system.{Colors.RESET}")
+                print(f"      Install it at ~/.strix/ run-strix.sh")
+            return
+
+        # Default: scan a target
+        target = arg.strip()
+        if not target.startswith("http://") and not target.startswith("https://"):
+            # Could be an IP or hostname — probe with http/https
+            target = f"https://{target}"
+
+        print(f"\n{Colors.CYAN}[*] Strix scan initiated for: {target}{Colors.RESET}\n")
+        result = strix.scan(target)
+
+        print()
+        if result["success"]:
+            print(f"{Colors.GREEN}[+] Scan completed in {result.get('elapsed_seconds', 0)}s{Colors.RESET}")
+            print(f"{Colors.GREEN}[+] Full output saved to: {result.get('log_path', 'N/A')}{Colors.RESET}")
+            print(f"\n{Colors.BOLD}Results:{Colors.RESET}")
+            print(result.get("output", "No output")[:2000])
+        else:
+            print(f"{Colors.RED}[-] Scan failed: {result.get('error', 'Unknown error')}{Colors.RESET}")
+
+        # Add target to database
+        host = target.split("://")[-1].split("/")[0]
+        t = self.target_manager.add(host)
+        t.notes["strix_scanned"] = True
+        t.notes["strix_last_scan"] = result.get("timestamp", "")
+        self.target_manager.save()
 
     # ──────────────────────────────────────────
     # Update system commands

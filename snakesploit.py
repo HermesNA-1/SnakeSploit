@@ -43,11 +43,43 @@ Examples:
     parser.add_argument("--gen-cves", action="store_true", help="Generate modules from CVEs")
     parser.add_argument("--search", type=str, help="Search modules")
     parser.add_argument("--non-interactive", action="store_true", help="Don't start console")
+    parser.add_argument("--update-self", action="store_true", help="Update SnakeSploit to the latest version from GitHub")
     parser.add_argument("--activate", type=str, help="Activate SnakeSploit with a license key", metavar="LICENSE_KEY")
     parser.add_argument("--deactivate", action="store_true", help="Deactivate this device")
     parser.add_argument("--license-status", action="store_true", help="Show license status")
 
     args = parser.parse_args()
+
+    # ── Self-update ──────────────────────────────────────
+    if args.update_self:
+        import subprocess, sys
+        repo_dir = os.path.dirname(os.path.abspath(__file__))
+        print(f"  [*] Updating SnakeSploit from GitHub...")
+        try:
+            result = subprocess.run(
+                ["git", "pull"],
+                cwd=repo_dir,
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            if result.returncode == 0:
+                output = result.stdout.strip()
+                if "Already up to date" in output:
+                    print(f"  [+] Already up to date!")
+                else:
+                    print(f"  [+] Updated successfully!")
+                    print(f"  {output[:500]}")
+                    print(f"  [*] Restart SnakeSploit to use the latest version.")
+            else:
+                print(f"  [-] Update failed: {result.stderr[:300]}")
+        except FileNotFoundError:
+            print(f"  [-] Git not found. Install git to use self-update.")
+        except subprocess.TimeoutExpired:
+            print(f"  [-] Update timed out. Try again later.")
+        except Exception as e:
+            print(f"  [-] Update failed: {e}")
+        return
 
     # ── License handling ──────────────────────────────────
     from core.license import LicenseManager, RESEARCHER_CONTACT

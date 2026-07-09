@@ -148,6 +148,7 @@ class SnakeSploitConsole(cmd.Cmd):
 {Colors.CYAN}─── Update System (CVE + PoC) ───{Colors.RESET}
   update [days]        Fetch CVEs from NVD (last N days, default 7)
   update full [days]   Full pipeline: CVEs → PoCs → Module Gen
+  update-self          Update SnakeSploit itself from GitHub
   pocs <cve>           Search PoCs for a specific CVE
   cve stats            Show CVE cache statistics
 
@@ -315,6 +316,38 @@ class SnakeSploitConsole(cmd.Cmd):
     # ──────────────────────────────────────────
     # Update system commands
     # ──────────────────────────────────────────
+
+    def do_update_self(self, arg):
+        """Update SnakeSploit itself from GitHub. Usage: update-self"""
+        import subprocess
+        repo_dir = os.path.dirname(os.path.abspath(__file__))
+        print(f"{Colors.CYAN}[*] Updating SnakeSploit from GitHub...{Colors.RESET}")
+        try:
+            result = subprocess.run(
+                ["git", "pull"],
+                cwd=repo_dir,
+                capture_output=True,
+                text=True,
+                timeout=30,
+            )
+            if result.returncode == 0:
+                output = result.stdout.strip()
+                if "Already up to date" in output:
+                    print(f"{Colors.GREEN}[+] Already up to date!{Colors.RESET}")
+                else:
+                    print(f"{Colors.GREEN}[+] Updated successfully!{Colors.RESET}")
+                    for line in output.split("\n")[:5]:
+                        if line.strip():
+                            print(f"     {line}")
+                    print(f"{Colors.YELLOW}[!] Restart SnakeSploit to use the latest version.{Colors.RESET}")
+            else:
+                print(f"{Colors.RED}[-] Update failed: {result.stderr[:200]}{Colors.RESET}")
+        except FileNotFoundError:
+            print(f"{Colors.RED}[-] Git not found. Install git to use self-update.{Colors.RESET}")
+        except subprocess.TimeoutExpired:
+            print(f"{Colors.RED}[-] Update timed out.{Colors.RESET}")
+        except Exception as e:
+            print(f"{Colors.RED}[-] Update failed: {e}{Colors.RESET}")
 
     def do_update(self, arg):
         """Fetch CVEs from NVD. Usage: update [days] or update full [days]"""

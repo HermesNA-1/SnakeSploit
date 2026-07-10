@@ -199,8 +199,8 @@ class SnakeSploitConsole(cmd.Cmd):
 """)
 
     def do_exit(self, arg):
-        """Exit Nova."""
-        print(f"\n{Colors.GREEN}See you next time, Nirbhik. Stay sharp.{Colors.RESET}")
+        """Exit SnakeSploit."""
+        print(f"\n{Colors.GREEN}See you next time.{Colors.RESET}")
         self.target_manager.save()
         self.session_manager.save()
         self._running = False
@@ -1059,7 +1059,7 @@ class SnakeSploitConsole(cmd.Cmd):
         try:
             self.cmdloop()
         except KeyboardInterrupt:
-            print(f"\n\n{Colors.GREEN}Goodbye, Nirbhik.{Colors.RESET}")
+            print(f"\n\n{Colors.GREEN}Goodbye.{Colors.RESET}")
             self.target_manager.save()
             self.session_manager.save()
             self._running = False

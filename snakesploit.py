@@ -99,10 +99,12 @@ Examples:
     # ── License handling ──────────────────────────────────
     from core.license import LicenseManager, RESEARCHER_CONTACT
 
-    # LicenseSeat API key — from environment or built-in
-    api_key = os.environ.get("SNAKESPLOIT_LICENSE_API_KEY",
-        "pk_live_8FfZppC5Vtd3xaG7zLHz5ZgivbJHcXcoJ")
-    license_mgr = LicenseManager(api_key=api_key, product_slug="hermesna")
+    # LicenseSeat API key — must be set via environment variable
+    api_key = os.environ.get("SNAKESPLOIT_LICENSE_API_KEY", "")
+    if not api_key:
+        print("  [!] SNAKESPLOIT_LICENSE_API_KEY not set. License validation disabled.")
+    product_slug = os.environ.get("SNAKESPLOIT_PRODUCT_SLUG", "default")
+    license_mgr = LicenseManager(api_key=api_key, product_slug=product_slug)
 
     if args.activate:
         result = license_mgr.activate(args.activate)

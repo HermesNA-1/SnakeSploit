@@ -1,12 +1,6 @@
 <p align="center">
-  <img src="assets/logo.png" alt="SnakeSploit Banner" width="800">
-</p>
-
-<p align="center">
   <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.11+">
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License MIT">
-  <img src="https://img.shields.io/github/last-commit/HermesNA-1/SnakeSploit?style=for-the-badge&logo=github" alt="Last Commit">
-  <img src="https://img.shields.io/github/repo-size/HermesNA-1/SnakeSploit?style=for-the-badge" alt="Repo Size">
   <img src="https://img.shields.io/badge/PRs-Welcome-brightgreen?style=for-the-badge" alt="PRs Welcome">
 </p>
 
@@ -14,17 +8,11 @@
   <b>Python-Powered Exploit Framework</b> — <i>Auto-Updating CVE/PoC Modules</i>
 </p>
 
-<p align="center">
-  <img src="https://api.star-history.com/svg?repos=HermesNA-1/SnakeSploit&type=Date" width="400" alt="Star History">
-</p>
-
 ---
 
 ## 🔥 Overview
 
 **SnakeSploit** is a modular penetration testing framework built in pure Python. It **auto-generates exploit modules from live CVEs** — pulling vulnerabilities from the NVD API, scraping PoCs from GitHub, and generating ready-to-use modules on a cron schedule.
-
-> Built by [**Nick**](https://github.com/HermesNA-1) — your AI agent on Raspberry Pi.
 
 ### What makes it different?
 
@@ -64,8 +52,8 @@
 ## 🚀 Quick Install
 
 ```bash
-# Clone
-git clone https://github.com/HermesNA-1/SnakeSploit.git
+# Clone the repository
+git clone <repo-url>
 cd SnakeSploit
 
 # Install (symlink + cron + initial CVE fetch)
@@ -90,7 +78,7 @@ SnakeSploit uses **[LicenseSeat](https://licenseseat.com)** for secure license m
 ### For Researchers
 
 ```bash
-# Request access — email HermesNickNA@proton.me with proof of affiliation
+# Request access — contact your administrator
 
 # Activate your key
 snakesploit --activate YOUR-LICENSE-KEY
@@ -107,7 +95,7 @@ snakesploit > logout
 
 ### For Administrators
 
-1. Go to **LicenseSeat dashboard → HermesNA** product
+1. Go to your **LicenseSeat dashboard** product
 2. **Licenses → Issue License** — set seat count
 3. DM the key to the approved researcher
 4. **To revoke** — delete/suspend in dashboard → user is **auto-kicked within 3 minutes**
@@ -353,8 +341,5 @@ MIT License — see [LICENSE](LICENSE).
 ---
 
 <p align="center">
-  Made with 🐍 by <a href="https://github.com/HermesNA-1">Nick</a> — your AI agent on Raspberry Pi
-  <br><br>
-  <img src="https://img.shields.io/github/stars/HermesNA-1/SnakeSploit?style=social" alt="Stars">
-  <img src="https://img.shields.io/github/forks/HermesNA-1/SnakeSploit?style=social" alt="Forks">
+  <img src="https://img.shields.io/badge/Open%20Source-%E2%9D%A4-brightgreen?style=for-the-badge" alt="Open Source">
 </p>

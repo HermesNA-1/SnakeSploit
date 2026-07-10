@@ -12,62 +12,119 @@
 
 ## 🔥 Overview
 
-**SnakeSploit** is a modular penetration testing framework built in pure Python. It **auto-generates exploit modules from live CVEs** — pulling vulnerabilities from the NVD API, scraping PoCs from GitHub, and generating ready-to-use modules on a cron schedule.
-
-### What makes it different?
+**SnakeSploit** is a modular penetration testing framework built in pure Python. It **auto-generates exploit modules from live CVEs**, includes a **full C2 framework** (Mythic-compatible + built-in), **payload/stager generation**, **anti-tamper protection**, and **MCP integration for AI agents** — all with zero external dependencies.
 
 | Feature | SnakeSploit | Traditional |
 |---------|------------|-------------|
-| **Module updates** | Auto-generated from live CVEs every 6h | Wait for framework releases |
-| **CVE coverage** | 200+ modules, updated daily | Static module database |
-| **Setup time** | 1 command: `python3 install.py` | Manual config, DB setup |
-| **License control** | Built-in LicenseSeat integration | None or DIY |
-| **AI scanning** | Strix integration for deep analysis | Manual only |
-| **Dependencies** | Python stdlib only | Gigabytes of tools |
+| Module updates | Auto-generated from live CVEs every 6h | Wait for framework releases |
+| CVE coverage | 200+ modules, updated daily | Static module database |
+| C2 Framework | Built-in + Mythic API | Separate tool (CS, Mythic) |
+| Anti-Tamper | File integrity + anti-debug + process protection | None |
+| AI Agent Support | MCP protocol (Claude, Cline, Cursor) | None |
+| Dependencies | Python stdlib only | Gigabytes of tools |
 
 ---
 
 ## ✨ Features
-
-<div align="center">
 
 | | Feature | Description |
 |:-:|---------|-------------|
 | 🎯 | **Interactive Console** | Metasploit-like workflow: `search` → `use` → `set` → `check` → `run` |
 | 🔄 | **Auto-Update Pipeline** | Fetches CVEs from NVD every 6h, scrapes GitHub for PoCs, generates modules |
 | 📦 | **200+ Auto-Generated Modules** | Live exploit/auxiliary stubs from real CVEs — updated daily |
+| 🧠 | **C2 Framework** | Built-in C2 server (listeners, agents, tasking, staging) + Mythic REST API |
+| 💀 | **Payload Stagers** | Python/PowerShell/Bash beacons that automatically check in to your C2 |
+| 🛡️ | **Anti-Tamper System** | SHA-256 integrity verification, anti-debug, process protection, file monitoring |
+| 🤖 | **MCP Protocol** | AI agents discover and use SnakeSploit tools via Model Context Protocol |
 | 🔍 | **CVE Cache Engine** | NVD API 2.0 with severity filtering (Critical/High/Medium) |
 | 🕸️ | **PoC Scraper** | Searches GitHub and Exploit-DB for proof-of-concept code |
 | 🤖 | **Strix AI Scanner** | AI-powered web security scanning with configurable API key |
 | 💀 | **Payload Generator** | 7 payload types: reverse shells (Python/Bash/NC/PowerShell/Perl/PHP) + bind shells |
-| 📡 | **Port Scanner** | Fast TCP port scanning with service fingerprinting |
-| 🎯 | **Target Management** | Persistent SQLite database — hosts, services, banners, vulnerabilities |
+| 📡 | **Port Scanner** | Fast TCP port scanning with service fingerprinting + banner grabbing |
+| 🎯 | **Target Management** | Persistent database — hosts, services, banners, vulnerabilities |
 | 🐚 | **Session Handling** | Listener mode, interactive shell sessions, multi-session management |
 | 🔐 | **License Control** | LicenseSeat integration — activate, revoke, deactivate, auto-kick on revocation |
-
-</div>
+| 🖥️ | **Web Dashboard** | Premium GUI with real-time stats, target management, live console, reports |
+| 📋 | **Engagement Reports** | Generate HTML reports with targets, services, vulnerabilities, CVEs |
 
 ---
 
 ## 🚀 Quick Install
 
 ```bash
-# Clone the repository
 git clone <repo-url>
 cd SnakeSploit
-
-# Install (symlink + cron + initial CVE fetch)
 python3 install.py
-
-# Activate your license
-snakesploit --activate YOUR-LICENSE-KEY
-
-# Launch
 snakesploit
 ```
 
-> **No dependencies required** — SnakeSploit uses only Python standard library.  
-> Optional: `nmap` for advanced port scanning.
+> **No dependencies required** — SnakeSploit uses only Python standard library.
+> Optional: `nmap` for advanced scanning, `flask` for web dashboard.
+
+---
+
+## 🧠 C2 Framework (No Mythic Required)
+
+SnakeSploit includes a **full Command & Control framework** that works completely standalone. No Mythic, no Cobalt Strike, no external servers needed.
+
+### Built-in C2 Server
+
+```bash
+# Create and start a listener
+snakesploit > c2 listener create beacon 0.0.0.0 4444
+snakesploit > c2 listener start beacon
+
+# Stage a payload (beacon)
+snakesploit > c2 payload python LHOST=10.0.0.5 LPORT=4444 name=stage1
+
+# Deploy the stager on target → agent checks in automatically
+snakesploit > c2 list
+  agent_1  192.168.1.100  admin@PC-01  windows  active
+  agent_2  10.0.0.50      root@server  linux    active
+
+# Task agents
+snakesploit > c2 task agent_1 "whoami"
+snakesploit > c2 task agent_2 "cat /etc/shadow"
+```
+
+### Stager Types
+
+| Type | Platform | Size | Features |
+|------|----------|------|----------|
+| `python` | Multi | ~2KB | Full tasking, command output, threaded |
+| `powershell` | Windows | ~1KB | Native PS, task execution |
+| `bash` | Linux | ~300B | Lightweight, /dev/tcp based |
+
+### Mythic Integration (Optional)
+
+```bash
+snakesploit > c2 mythic connect https://mythic-server:7443 API_KEY
+snakesploit > c2 mythic callbacks
+snakesploit > c2 mythic task 1 "shell whoami"
+```
+
+---
+
+## 🛡️ Anti-Tamper System
+
+SnakeSploit includes a **multi-layer anti-tamper system** to detect code modification and debugging:
+
+| Protection | What it does |
+|-----------|-------------|
+| **SHA-256 Integrity** | All core files are hashed. Any modification is detected on launch |
+| **Anti-Debug** | Detects ptrace (debugger) attachment via TracerPid |
+| **Process Hardening** | Makes process non-dumpable via `prctl(PR_SET_DUMPABLE, 0)` |
+| **File Monitor** | Background thread re-checks hashes every 30 seconds |
+| **Tamper Flag** | Tampering evidence persists across sessions |
+| **VM Detection** | Detects VMware, VirtualBox, QEMU, Docker environments |
+
+```bash
+# Manual verification
+snakesploit --verify
+
+# Auto-checked on every launch
+snakesploit
+```
 
 ---
 
@@ -75,75 +132,35 @@ snakesploit
 
 SnakeSploit uses **[LicenseSeat](https://licenseseat.com)** for secure license management.
 
-### For Researchers
-
 ```bash
-# Request access — contact your administrator
-
 # Activate your key
 snakesploit --activate YOUR-LICENSE-KEY
 
-# Check license status
-snakesploit --license-status
-
-# Deactivate on shared machines (frees your seat)
+# Deactivate (frees seat on shared machines)
 snakesploit --deactivate
-# Or from inside the console:
+
+# From console
 snakesploit > deactivate
 snakesploit > logout
 ```
 
-### For Administrators
-
-1. Go to your **LicenseSeat dashboard** product
-2. **Licenses → Issue License** — set seat count
-3. DM the key to the approved researcher
-4. **To revoke** — delete/suspend in dashboard → user is **auto-kicked within 3 minutes**
-
-```
-┌─ Researcher ─┐    ┌─ You (Admin) ─┐    ┌─ LicenseSeat ─┐
-│               │    │               │    │               │
-│  runs tool    │───►│  no license   │    │               │
-│  sees contact │    │               │    │               │
-│       │       │    │               │    │               │
-│  emails proof │───►│  verifies     │    │               │
-│       │       │    │  creates key ─┼───►│  stores key   │
-│       │       │    │  DMs key      │    │               │
-│       │       │    │               │    │               │
-│  activates ───┼───►│  validates ───┼───►│  ✓ approved   │
-│       │       │    │               │    │               │
-│  [3 min] ─────┼───►│  re-checks ───┼───►│  still valid  │
-│       │       │    │               │    │               │
-│  revoke!      │    │               │    │               │
-│  ❌ kicked ◄──┼────│  detects ◄────┼────│  revoked      │
-└───────────────┘    └───────────────┘    └───────────────┘
-```
+**Revocation:** When revoked in the LicenseSeat dashboard → auto-kicked within 3 minutes.
 
 ---
 
-## 🤖 Strix AI Scanner
+## 🤖 MCP Protocol (AI Agent Integration)
 
-SnakeSploit integrates with **Strix**, an AI-powered web security scanner for deep reconnaissance and vulnerability analysis.
+SnakeSploit implements the **Model Context Protocol**, allowing AI agents to discover and use its tools:
 
 ```bash
-# Configure your API key (one-time)
-snakesploit strix config --key YOUR_STRIX_API_KEY
+# Start MCP server
+snakesploit --mcp http --mcp-port 8765
 
-# Check status
-snakesploit strix status
+# Connect Claude Code:
+claude --mcp http://127.0.0.1:8765
 
-# Scan a target
-snakesploit strix https://example.com
+# Claude can now: "scan 192.168.1.100 for open ports"
 ```
-
-Or from the interactive console:
-```
-snakesploit > strix config --key YOUR_STRIX_API_KEY
-snakesploit > strix status
-snakesploit > strix example.com
-```
-
-> Strix results are saved to `~/.snakesploit/strix_scans/` and automatically linked to your target database.
 
 ---
 
@@ -156,169 +173,124 @@ snakesploit
 ```
 
 ```
-   _____  _        _        _____           _ _ _       _
-  / ____|| |      ( )      / ____|         | (_) |     | |
- | (___  | | _____ _/ ___ | |     ___  _ __| |_| |_ ___| | ___
-  \___ \ | |/ / _ \ / __|| |    / _ \| '__| | | __/ _ \ |/ _ \
-  ____) ||   <  __/ \__ \| |___| (_) | |  | | | ||  __/ |  __/
- |_____/ |_|\_\___| |___/ \_____\___/|_|  |_|_|\__\___|_|\___|
-  -- Python-Powered Exploit Framework --
-
-Type 'help' for commands | 'update' to pull CVEs | 'exit' to quit
-snakesploit >
+snakesploit > scan 192.168.1.100
+snakesploit > search smb
+snakesploit > use smb_version_scanner
+snakesploit (smb_version_scanner) > set RHOSTS 192.168.1.100
+snakesploit (smb_version_scanner) > set RPORT 445
+snakesploit (smb_version_scanner) > check
+snakesploit (smb_version_scanner) > run
 ```
 
-### Full Engagement Walkthrough
+### Web Dashboard
 
 ```bash
-# 1. Pull latest CVEs
-snakesploit --update --days 7
-
-# 2. Start console
-snakesploit
-```
-
-```
-snakesploit > scan 192.168.1.100
-
-snakesploit > search smb
-  [+] 1 module found:
-    auxiliary/smb_version_scanner [CVE-2017-0143, CVE-2020-0796, CVE-2021-1675]
-
-snakesploit > use smb_version_scanner
-  [+] Using module: auxiliary/smb_version_scanner
-
-snakesploit (smb_version_scanner) > set RHOSTS 192.168.1.100
-  [+] RHOSTS => 192.168.1.100
-
-snakesploit (smb_version_scanner) > set RPORT 445
-  [+] RPORT => 445
-
-snakesploit (smb_version_scanner) > check
-  [*] Checking target...
-  [+] SMB service detected on 192.168.1.100:445
-
-snakesploit (smb_version_scanner) > run
-  [*] Running module...
-  [+] Module completed in 0.42s
+pip install flask
+snakesploit --gui
+# Open: http://localhost:5000
+# Or GitHub Pages: https://hermesna-1.github.io/SnakeSploit/
 ```
 
 ---
 
 ## 📋 Command Reference
 
-| Category | Command | Description |
-|----------|---------|-------------|
-| **Core** | `help` | Show command reference |
-| | `exit` / `quit` | Exit SnakeSploit |
-| | `clear` | Clear screen |
-| | `shell <cmd>` | Run shell command |
-| **License** | `deactivate` | Deactivate this device and free seat |
-| | `logout` | Alias for deactivate |
-| **Strix** | `strix <target>` | Run Strix AI security scan |
-| | `strix status` | Check Strix installation and config |
-| | `strix config --key K` | Set Strix API key |
-| **Update** | `update [days]` | Fetch CVEs from NVD |
-| | `update full [days]` | Full pipeline: CVEs → PoCs → modules |
-| | `pocs <CVE-ID>` | Search PoCs for a specific CVE |
-| | `cve stats` | Show CVE cache statistics |
-| **Modules** | `search <query>` | Find modules by name, CVE, or description |
-| | `use <name>` | Load a module |
-| | `list [category]` | List modules by category |
-| | `show [info\|options]` | Show module info or options |
-| | `set <opt> <val>` | Set a module option |
-| | `check` | Non-destructive vulnerability probe |
-| | `run` / `exploit` | Execute the module |
-| | `back` | Unload current module |
-| | `reload modules` | Reload all modules from disk |
-| **Targets** | `targets` | List all targets |
-| | `targets add <host>` | Add a target |
-| | `targets show <host>` | Show target details |
-| **Scanning** | `scan <host> [ports]` | TCP port scan |
-| | `http <url>` | HTTP GET request |
-| **Payloads** | `payloads` | List available payloads |
-| | `payloads <type> LHOST=x LPORT=y` | Generate a payload |
-| **Sessions** | `listener <port>` | Start reverse shell listener |
-| | `sessions` | List sessions |
-| | `sessions -i <id>` | Interact with a session |
-| | `sessions -k <id>` | Kill a session |
+### Core
+| Command | Description |
+|---------|-------------|
+| `help` | Show command reference |
+| `exit` / `quit` | Exit |
+| `shell <cmd>` | Run system command |
+| `clear` | Clear screen |
+
+### C2 Framework
+| Command | Description |
+|---------|-------------|
+| `c2 status` | C2 server status |
+| `c2 list` | List active agents |
+| `c2 task <id> <cmd>` | Task an agent |
+| `c2 listener create <name> <host> <port>` | Create listener |
+| `c2 listener start <name>` | Start listener |
+| `c2 payload <type> LHOST=x LPORT=y name=n` | Stage a payload |
+| `c2 mythic connect <url> <key>` | Connect to Mythic |
+| `c2 pivot <agent_id> <port>` | Create pivot listener |
+
+### Update
+| Command | Description |
+|---------|-------------|
+| `update [days]` | Pull code + fetch CVEs |
+| `update full [days]` | Full pipeline |
+| `update-self` | Just pull code |
+| `cve stats` | CVE cache statistics |
+| `pocs <CVE-ID>` | Search PoCs |
+
+### Modules
+| Command | Description |
+|---------|-------------|
+| `search <query>` | Find modules |
+| `use <name>` | Load module |
+| `set <opt> <val>` | Set option |
+| `show [options\|info]` | Show module info |
+| `check` | Vulnerability probe |
+| `run` / `exploit` | Execute |
+| `back` | Unload module |
+| `list [category]` | List modules |
+| `reload modules` | Reload from disk |
+
+### Scanning & Targets
+| Command | Description |
+|---------|-------------|
+| `scan <host> [ports]` | TCP port scan |
+| `http <url>` | HTTP GET request |
+| `targets` | List all targets |
+| `targets add <host>` | Add target |
+| `targets show <host>` | View target details |
+
+### Payloads & Sessions
+| Command | Description |
+|---------|-------------|
+| `payloads` | List payload types |
+| `payloads <type> LHOST=x LPORT=y` | Generate payload |
+| `listener <port>` | Start listener |
+| `sessions [-i id]` | List/interact sessions |
+
+### Advanced
+| Command | Description |
+|---------|-------------|
+| `strix <target>` | Strix AI scan |
+| `mcp [http]` | Start MCP server |
+| `gui [port]` | Start web dashboard |
+| `deactivate` / `logout` | Free license seat |
+| `--verify` | Check code integrity |
 
 ---
 
-## 🔄 Auto-Update Pipeline
-
-```
-┌──────────┐    fetch CVEs    ┌───────────┐    search PoCs    ┌──────────┐
-│ NVD API  │ ────────────────►│ CVE Cache │ ────────────────►│  GitHub  │
-│  (free)  │   every 6 hours  │  (JSON)   │                   │ ExploitDB│
-└──────────┘                  └─────┬─────┘                   └──────────┘
-                                    │                              │
-                                    │ high severity                │ found PoCs
-                                    ▼                              ▼
-                              ┌──────────┐                   ┌──────────┐
-                              │  Module   │◄──────────────────│   PoC    │
-                              │ Generator │   attach PoCs     │  Index   │
-                              └─────┬────┘                   └──────────┘
-                                    │
-                                    │ create .py modules
-                                    ▼
-                              ┌──────────┐    reload    ┌──────────────┐
-                              │ Generated │ ───────────►│  SnakeSploit │
-                              │ Modules   │              │   Console    │
-                              └──────────┘              └──────────────┘
-```
-
-### Manual trigger:
-```bash
-snakesploit --update               # Just CVEs
-snakesploit --full                 # Full pipeline
-snakesploit > update full 7        # From console
-```
-
----
-
-## 🏗️ Project Structure
+## 🏗️ Architecture
 
 ```
 SnakeSploit/
-├── snakesploit.py          # Entry point + CLI + license check
+├── snakesploit.py          # Entry point + CLI
 ├── console.py              # Interactive console
-├── install.py              # Installer + cron setup
-├── test_snakesploit.py     # 51-test suite
+├── web_gui.py              # Flask web dashboard
+├── mcp_server.py           # MCP protocol server
+├── install.py              # Installer
+├── uninstall.py            # Uninstaller
 │
 ├── core/
+│   ├── antitamper.py       # Anti-debug, integrity, file monitoring
+│   ├── c2.py               # C2 framework (Mythic + built-in)
+│   ├── integrity.py        # SHA-256 manifest verification
 │   ├── license.py          # LicenseSeat client
-│   ├── strix.py            # Strix AI scanner integration
+│   ├── strix.py            # Strix AI scanner
 │   ├── module.py           # Module system
 │   ├── target.py           # Target database
 │   └── session.py          # Session management
 │
-├── modules/
-│   ├── aux/                # Hand-crafted modules
-│   ├── exploits/
-│   └── payloads/
-│
-├── data/
-│   └── modules_generated/  # 200+ auto-generated CVE modules
-│
-├── updater/
-│   ├── cve_fetcher.py      # NVD API client + PoC scraper
-│   └── module_generator.py # Module generation engine
-│
-├── lib/
-│   ├── network.py          # Port scanner, HTTP client
-│   └── payloads.py         # Payload generator
-│
-├── assets/
-│   └── logo.png            # SnakeSploit branding
-│
-└── ~/.snakesploit/         # Runtime data
-    ├── license.json        # License state
-    ├── strix_scans/        # Scan results
-    ├── cve_cache/
-    ├── poc_cache/
-    ├── loot/
-    └── logs/
+├── modules/                # Exploit modules
+├── data/modules_generated/ # 200+ auto-generated CVE modules
+├── updater/                # CVE auto-update engine
+├── lib/                    # Network, payloads
+└── docs/                   # GitHub Pages site
 ```
 
 ---

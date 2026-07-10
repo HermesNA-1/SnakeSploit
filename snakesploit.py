@@ -44,6 +44,8 @@ Examples:
     parser.add_argument("--search", type=str, help="Search modules")
     parser.add_argument("--non-interactive", action="store_true", help="Don't start console")
     parser.add_argument("--update-self", action="store_true", help="Update SnakeSploit to the latest version from GitHub")
+    parser.add_argument("--mcp", nargs="?", const="stdio", help="Start MCP server (stdio, or --mcp http --port 8765)")
+    parser.add_argument("--mcp-port", type=int, default=8765, help="MCP HTTP port (default: 8765)")
     parser.add_argument("--activate", type=str, help="Activate SnakeSploit with a license key", metavar="LICENSE_KEY")
     parser.add_argument("--deactivate", action="store_true", help="Deactivate this device")
     parser.add_argument("--license-status", action="store_true", help="Show license status")
@@ -79,6 +81,19 @@ Examples:
             print(f"  [-] Update timed out. Try again later.")
         except Exception as e:
             print(f"  [-] Update failed: {e}")
+        return
+
+    # ── MCP Server ────────────────────────────────────────
+    if args.mcp is not None:
+        from mcp_server import main as mcp_main
+        import sys as _sys
+        # Rebuild args for mcp_server
+        mcp_args = ["mcp_server.py"]
+        if args.mcp == "http":
+            mcp_args.append("--http")
+            mcp_args.extend(["--port", str(args.mcp_port)])
+        _sys.argv = mcp_args
+        mcp_main()
         return
 
     # ── License handling ──────────────────────────────────

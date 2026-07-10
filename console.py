@@ -187,7 +187,11 @@ class SnakeSploitConsole(cmd.Cmd):
   strix status         Check Strix installation status
   strix config --key K Configure your Strix API key
 
-{Colors.CYAN}─── System ───{Colors.RESET}
+{Colors.CYAN}─── MCP / AI Integration ───{Colors.RESET}
+  mcp                  Start MCP server (stdio mode for AI agents)
+  mcp http [port]      Start MCP server over HTTP
+
+─── System ───{Colors.RESET}
   shell <command>      Run a shell command
   deactivate / logout  Deactivate this device and free your license seat
   clear                Clear the screen
@@ -348,6 +352,27 @@ class SnakeSploitConsole(cmd.Cmd):
             print(f"{Colors.RED}[-] Update timed out.{Colors.RESET}")
         except Exception as e:
             print(f"{Colors.RED}[-] Update failed: {e}{Colors.RESET}")
+
+    def do_mcp(self, arg):
+        """Start the SnakeSploit MCP server for AI agent integration.
+           Usage:
+             mcp              Start MCP in stdio mode (for AI agents)
+             mcp http         Start MCP over HTTP on port 8765
+             mcp http 9876    Start MCP over HTTP on a custom port"""
+        from mcp_server import MCPServer
+        args = arg.strip().split()
+        if args and args[0] == "http":
+            port = int(args[1]) if len(args) > 1 else 8765
+            print(f"{Colors.CYAN}[*] Starting SnakeSploit MCP server on http://127.0.0.1:{port}{Colors.RESET}")
+            print(f"{Colors.YELLOW}[!] Connect AI agents (Claude, Cline) to this endpoint.{Colors.RESET}")
+            print(f"{Colors.YELLOW}[!] Press Ctrl+C to stop.{Colors.RESET}")
+            server = MCPServer(transport="http")
+            server.run_http(port=port)
+        else:
+            print(f"{Colors.CYAN}[*] Starting SnakeSploit MCP server in stdio mode...{Colors.RESET}")
+            print(f"{Colors.YELLOW}[!] This mode is for AI agent subprocess communication.{Colors.RESET}")
+            server = MCPServer(transport="stdio")
+            server.run_stdio()
 
     def do_update(self, arg):
         """Update everything: pull latest code from GitHub, then fetch CVEs.

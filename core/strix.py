@@ -1,6 +1,17 @@
 """
 SnakeSploit Strix Integration — AI-powered web security scanner.
 Runs against targets via the Strix engine, stores results.
+
+To get a Strix API key:
+  1. Visit https://strix.ai and create an account
+  2. Go to Settings → API Keys
+  3. Generate a new API key
+  4. Configure in SnakeSploit: strix config --key YOUR_KEY
+
+If you don't have a Strix key, use the built-in scanner instead:
+  scan <host> [ports]    — TCP port scan
+  http <url>             — HTTP reconnaissance
+  snakesploit --full     — CVE-based module scanning
 """
 
 import json

@@ -127,16 +127,19 @@ Examples:
        and not args.activate and not args.deactivate and not args.license_status \
        and not args.mcp and not args.gui:
         try:
-            from core.integrity import verify_integrity
-            integrity_result = verify_integrity()
-            if not integrity_result["valid"]:
-                print("  [!] WARNING: Code integrity check failed!")
-                print("  [!] This installation may have been tampered with.")
-                if integrity_result["tampered"]:
-                    print("  [!] Modified files: %s" % ", ".join(integrity_result["tampered"]))
-                print("  [!] Run 'snakesploit --verify' for details.")
+            from core.antitamper import full_security_check, print_security_report, protect_process, FileMonitor
+            # Make process non-dumpable
+            protect_process()
+            # Start background file monitor
+            _file_monitor = FileMonitor(interval=30)
+            _file_monitor.daemon = True
+            _file_monitor.start()
+            # Initial security check
+            security = full_security_check()
+            if not security["passed"]:
+                print_security_report(security)
         except ImportError:
-            pass  # Integrity module not available, skip check
+            pass  # Anti-tamper module not available
 
     # ── License handling ──────────────────────────────────
     from core.license import LicenseManager, RESEARCHER_CONTACT

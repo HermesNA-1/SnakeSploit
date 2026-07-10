@@ -324,20 +324,38 @@ class SnakeSploitConsole(cmd.Cmd):
 
     def do_c2(self, arg):
         """C2 Framework — Command & Control operations.
-           Usage:
-             c2 status                    Show C2 server status
-             c2 list                      List active agents
-             c2 task <agent_id> <cmd>     Task an agent
-             c2 listener create <name> <host> <port>  Create a listener
-             c2 listener start <name>     Start a listener
-             c2 listener stop <name>      Stop a listener
-             c2 payload <type> LHOST=x LPORT=y name=n  Stage a payload
-             c2 payloads                  List staged payloads
-             c2 mythic connect <url> <key> Connect to Mythic C2
-             c2 mythic status             Check Mythic connection
-             c2 mythic callbacks          List Mythic callbacks
-             c2 mythic task <id> <cmd>    Task Mythic agent
-             c2 pivot <agent_id> <port>   Create pivot listener"""
+
+What are C2 listeners?
+C2 listeners are the backbone of any C2 (Command & Control) framework.
+They sit on your attacker machine and wait for agent connections.
+
+Any target that executes your staged payload will "call home" to
+this listener, giving you a command shell on the target.
+
+    Usage:
+      c2 status                    Show C2 server status
+      c2 list                      List active agents
+      c2 task <agent_id> <cmd>     Send a command to an agent
+
+      -- Listeners --
+      c2 listener create <name> <host> <port>  Create (no Mythic needed)
+      c2 listener start <name>     Start accepting connections
+      c2 listener stop <name>      Stop a listener
+
+      -- Staged Payloads (build your own beacon) --
+      c2 payload python LHOST=x LPORT=y name=n
+      c2 payload powershell LHOST=x LPORT=y name=n
+      c2 payload bash LHOST=x LPORT=y name=n
+      c2 payloads                  List staged payloads
+
+      -- Mythic (optional -- only if you have a Mythic server) --
+      c2 mythic connect <url> <key> Connect to Mythic C2
+      c2 mythic status             Check Mythic connection
+      c2 mythic callbacks          List Mythic callbacks
+      c2 mythic task <id> <cmd>    Task Mythic agent
+
+      -- Advanced --
+      c2 pivot <agent_id> <port>   Create pivot listener through an agent"""
         from core.c2 import C2Server, MythicClient
 
         args = arg.strip().split()

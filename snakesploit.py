@@ -47,6 +47,7 @@ Examples:
     parser.add_argument("--mcp", nargs="?", const="stdio", help="Start MCP server (stdio, or --mcp http --port 8765)")
     parser.add_argument("--mcp-port", type=int, default=8765, help="MCP HTTP port (default: 8765)")
     parser.add_argument("--verify", action="store_true", help="Verify code integrity (detect tampering)")
+    parser.add_argument("--make-telegram-agent", action="store_true", help="Generate a Telegram C2 agent script")
     parser.add_argument("--gui", nargs="?", const="5000", help="Start web GUI (default port 5000, or --gui 8080)")
     parser.add_argument("--gui-host", default="0.0.0.0", help="GUI bind address (default: 0.0.0.0)")
     parser.add_argument("--activate", type=str, help="Activate SnakeSploit with a license key", metavar="LICENSE_KEY")
@@ -119,6 +120,12 @@ Examples:
         result = verify_integrity()
         print_verification_result(result)
         sys.exit(0 if result["valid"] else 1)
+
+    # ── Telegram Agent Generator ─────────────────────
+    if args.make_telegram_agent:
+        from core.telegram_agent import main as tg_main
+        tg_main()
+        return
 
     # ── Integrity check on startup (silent) ─────────────
     # Only runs for interactive console, not for --update, --cve, etc.

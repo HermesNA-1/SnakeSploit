@@ -46,6 +46,7 @@ Examples:
     parser.add_argument("--update-self", action="store_true", help="Update SnakeSploit to the latest version from GitHub")
     parser.add_argument("--mcp", nargs="?", const="stdio", help="Start MCP server (stdio, or --mcp http --port 8765)")
     parser.add_argument("--mcp-port", type=int, default=8765, help="MCP HTTP port (default: 8765)")
+    parser.add_argument("--verify", action="store_true", help="Verify code integrity (detect tampering)")
     parser.add_argument("--gui", nargs="?", const="5000", help="Start web GUI (default port 5000, or --gui 8080)")
     parser.add_argument("--gui-host", default="0.0.0.0", help="GUI bind address (default: 0.0.0.0)")
     parser.add_argument("--activate", type=str, help="Activate SnakeSploit with a license key", metavar="LICENSE_KEY")
@@ -111,6 +112,31 @@ Examples:
         _sys.argv = gui_args
         gui_main()
         return
+
+    # ── Integrity verification ──────────────────────────
+    if args.verify:
+        from core.integrity import verify_integrity, print_verification_result
+        result = verify_integrity()
+        print_verification_result(result)
+        sys.exit(0 if result["valid"] else 1)
+
+    # ── Integrity check on startup (silent) ─────────────
+    # Only runs for interactive console, not for --update, --cve, etc.
+    if not args.update and not args.cve and not args.module_list \
+       and not args.gen_cves and not args.search and not args.non_interactive \
+       and not args.activate and not args.deactivate and not args.license_status \
+       and not args.mcp and not args.gui:
+        try:
+            from core.integrity import verify_integrity
+            integrity_result = verify_integrity()
+            if not integrity_result["valid"]:
+                print("  [!] WARNING: Code integrity check failed!")
+                print("  [!] This installation may have been tampered with.")
+                if integrity_result["tampered"]:
+                    print("  [!] Modified files: %s" % ", ".join(integrity_result["tampered"]))
+                print("  [!] Run 'snakesploit --verify' for details.")
+        except ImportError:
+            pass  # Integrity module not available, skip check
 
     # ── License handling ──────────────────────────────────
     from core.license import LicenseManager, RESEARCHER_CONTACT

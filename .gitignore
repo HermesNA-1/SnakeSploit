@@ -12,3 +12,4 @@ data/poc_cache/
 !manifest.json
 .env
 *.log
+.integrity_manifest.json

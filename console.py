@@ -319,7 +319,168 @@ class SnakeSploitConsole(cmd.Cmd):
         self.target_manager.save()
 
     # ──────────────────────────────────────────
-    # Update system commands
+    # C2 commands
+    # ──────────────────────────────────────────
+
+    def do_c2(self, arg):
+        """C2 Framework — Command & Control operations.
+           Usage:
+             c2 status                    Show C2 server status
+             c2 list                      List active agents
+             c2 task <agent_id> <cmd>     Task an agent
+             c2 listener create <name> <host> <port>  Create a listener
+             c2 listener start <name>     Start a listener
+             c2 listener stop <name>      Stop a listener
+             c2 payload <type> LHOST=x LPORT=y name=n  Stage a payload
+             c2 payloads                  List staged payloads
+             c2 mythic connect <url> <key> Connect to Mythic C2
+             c2 mythic status             Check Mythic connection
+             c2 mythic callbacks          List Mythic callbacks
+             c2 mythic task <id> <cmd>    Task Mythic agent
+             c2 pivot <agent_id> <port>   Create pivot listener"""
+        from core.c2 import C2Server, MythicClient
+
+        args = arg.strip().split()
+        if not args:
+            print(f"\n{Colors.BOLD}C2 Framework{Colors.RESET}")
+            print(f"  Built-in C2 server + Mythic C2 integration")
+            print(f"  Type 'c2 status' for overview")
+            return
+
+        cmd = args[0]
+        c2 = C2Server()
+
+        # ── Status ──
+        if cmd == "status":
+            status = c2.status()
+            print(f"\n{Colors.BOLD}C2 Server Status{Colors.RESET}")
+            print(f"  Listeners: {status['listeners']['total']} ({status['listeners']['running']} running)")
+            print(f"  Agents:    {status['agents']['total']} ({status['agents']['active']} active)")
+            print(f"  Payloads:  {status['payloads_staged']} staged")
+            return
+
+        # ── List agents ──
+        if cmd == "list":
+            agents = c2.get_agents()
+            if not agents:
+                print(f"{Colors.YELLOW}[!] No agents registered{Colors.RESET}")
+                return
+            print(f"\n{Colors.BOLD}Agents:{Colors.RESET}")
+            for a in agents:
+                status_color = Colors.GREEN if not a['dead'] else Colors.RED
+                print(f"  {a['id']:<12} {a['host']:<20} {a['user']}@{a['computer']:<20} {a['os']:<10} {status_color}{'active' if not a['dead'] else 'dead'}{Colors.RESET}")
+            return
+
+        # ── Task agent ──
+        if cmd == "task" and len(args) >= 3:
+            agent_id = args[1]
+            command = " ".join(args[2:])
+            result = c2.task_agent(agent_id, command)
+            if result["success"]:
+                print(f"{Colors.GREEN}[+] Task sent to {agent_id}{Colors.RESET}")
+            else:
+                print(f"{Colors.RED}[-] {result['error']}{Colors.RESET}")
+            return
+
+        # ── Listener management ──
+        if cmd == "listener" and len(args) >= 2:
+            sub = args[1]
+            if sub == "create" and len(args) >= 5:
+                name = args[2]; host = args[3]; port = int(args[4])
+                result = c2.create_listener(name, host, port)
+                if result["success"]:
+                    print(f"{Colors.GREEN}[+] {result['message']}{Colors.RESET}")
+                else:
+                    print(f"{Colors.RED}[-] {result['error']}{Colors.RESET}")
+            elif sub == "start" and len(args) >= 3:
+                result = c2.start_listener(args[2])
+                if result["success"]:
+                    print(f"{Colors.GREEN}[+] {result['message']}{Colors.RESET}")
+                else:
+                    print(f"{Colors.RED}[-] {result['error']}{Colors.RESET}")
+            elif sub == "stop" and len(args) >= 3:
+                result = c2.stop_listener(args[2])
+                print(f"{Colors.YELLOW}[!] {result['message']}{Colors.RESET}")
+            else:
+                print(f"{Colors.YELLOW}[!] Usage: c2 listener create|start|stop <name> [host] [port]{Colors.RESET}")
+            return
+
+        # ── Payload staging ──
+        if cmd == "payload" and len(args) >= 2:
+            ptype = args[1]
+            lhost = ""; lport = 0; name = f"payload_{ptype}"
+            for p in args[2:]:
+                if "=" in p:
+                    k, v = p.split("=", 1)
+                    if k.upper() == "LHOST": lhost = v
+                    elif k.upper() == "LPORT": lport = int(v)
+                    elif k.upper() == "NAME": name = v
+            result = c2.stage_payload(name, ptype, lhost, lport)
+            if result["success"]:
+                print(f"{Colors.GREEN}[+] {result['message']}{Colors.RESET}")
+                print(f"  Stager: {result['payload']['stager'][:200]}...")
+            else:
+                print(f"{Colors.RED}[-] {result['error']}{Colors.RESET}")
+            return
+
+        if cmd == "payloads":
+            payloads = c2.get_payloads()
+            if not payloads:
+                print(f"{Colors.YELLOW}[!] No staged payloads{Colors.RESET}")
+                return
+            print(f"\n{Colors.BOLD}Staged Payloads:{Colors.RESET}")
+            for p in payloads:
+                print(f"  {p['name']:<20} {p['type']:<12} {p.get('lhost',''):<15} {p.get('lport',0)}")
+            return
+
+        # ── Mythic ──
+        if cmd == "mythic" and len(args) >= 2:
+            sub = args[1]
+            mythic = MythicClient()
+            if sub == "connect" and len(args) >= 4:
+                mythic.configure(args[2], args[3])
+                if mythic.is_connected():
+                    print(f"{Colors.GREEN}[+] Connected to Mythic at {args[2]}{Colors.RESET}")
+                else:
+                    print(f"{Colors.RED}[-] Could not connect to Mythic{Colors.RESET}")
+            elif sub == "status":
+                s = mythic.status()
+                print(f"\n{Colors.BOLD}Mythic Status{Colors.RESET}")
+                print(f"  Connected:  {Colors.GREEN}Yes{Colors.RESET}" if s['connected'] else f"  Connected:  {Colors.RED}No{Colors.RESET}")
+                print(f"  Server:     {s['server']}")
+                print(f"  API Key:    {'Configured' if s['has_key'] else 'Not set'}")
+            elif sub == "callbacks":
+                callbacks = mythic.get_callbacks()
+                if callbacks:
+                    print(f"\n{Colors.BOLD}Mythic Callbacks:{Colors.RESET}")
+                    for cb in callbacks:
+                        print(f"  ID {cb.get('id','?')}: {cb.get('user','')}@{cb.get('host','')}")
+                else:
+                    print(f"{Colors.YELLOW}[!] No callbacks or not connected{Colors.RESET}")
+            elif sub == "task" and len(args) >= 4:
+                cb_id = int(args[2]); command = " ".join(args[3:])
+                result = mythic.post_task(cb_id, command)
+                if result:
+                    print(f"{Colors.GREEN}[+] Task sent{Colors.RESET}")
+                else:
+                    print(f"{Colors.RED}[-] Failed to send task{Colors.RESET}")
+            else:
+                print(f"{Colors.YELLOW}[!] Mythic commands: connect, status, callbacks, task{Colors.RESET}")
+            return
+
+        # ── Pivot listener ──
+        if cmd == "pivot" and len(args) >= 3:
+            result = c2.create_pivot_listener(f"pivot_{args[1]}", args[1], int(args[2]))
+            if result["success"]:
+                print(f"{Colors.GREEN}[+] {result['message']}{Colors.RESET}")
+            else:
+                print(f"{Colors.RED}[-] {result['error']}{Colors.RESET}")
+            return
+
+        print(f"{Colors.YELLOW}[!] Unknown C2 command. Usage: c2 status|list|task|listener|payload|mythic|pivot{Colors.RESET}")
+
+    # ──────────────────────────────────────────
+    # MCP / AI Integration
     # ──────────────────────────────────────────
 
     def do_update_self(self, arg):

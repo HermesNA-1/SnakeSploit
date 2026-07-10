@@ -149,21 +149,28 @@ Examples:
     # For other CLI actions (--update, --cve stats, etc.), skip license check
     # But for interactive console, check license
     if not args.update and not args.cve and not args.module_list \
-       and not args.gen_cves and not args.search and not args.non_interactive:
-        validation = license_mgr.validate()
-        if not validation["valid"]:
-            print(RESEARCHER_CONTACT)
-            if not args.non_interactive:
-                response = input("\nEnter license key (or press Enter to exit): ").strip()
-                if response:
-                    result = license_mgr.activate(response)
-                    if result["success"]:
-                        print(f"  [+] {result['message']}")
+       and not args.gen_cves and not args.search and not args.non_interactive \
+       and not args.activate and not args.deactivate and not args.license_status:
+        # Only enforce license if an API key is actually configured
+        if api_key:
+            validation = license_mgr.validate()
+            if not validation["valid"]:
+                print(RESEARCHER_CONTACT)
+                if not args.non_interactive:
+                    response = input("\nEnter license key (or press Enter to exit): ").strip()
+                    if response:
+                        result = license_mgr.activate(response)
+                        if result["success"]:
+                            print(f"  [+] {result['message']}")
+                        else:
+                            print(f"  [-] {result['message']}")
+                            return
                     else:
-                        print(f"  [-] {result['message']}")
                         return
-                else:
-                    return
+        # If no API key, just proceed without license check
+        elif not args.non_interactive and not args.update and not args.cve \
+             and not args.module_list and not args.gen_cves and not args.search:
+            pass  # Continue to console
 
     # ── /License handling ─────────────────────────────────
 

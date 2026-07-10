@@ -46,6 +46,8 @@ Examples:
     parser.add_argument("--update-self", action="store_true", help="Update SnakeSploit to the latest version from GitHub")
     parser.add_argument("--mcp", nargs="?", const="stdio", help="Start MCP server (stdio, or --mcp http --port 8765)")
     parser.add_argument("--mcp-port", type=int, default=8765, help="MCP HTTP port (default: 8765)")
+    parser.add_argument("--gui", nargs="?", const="5000", help="Start web GUI (default port 5000, or --gui 8080)")
+    parser.add_argument("--gui-host", default="0.0.0.0", help="GUI bind address (default: 0.0.0.0)")
     parser.add_argument("--activate", type=str, help="Activate SnakeSploit with a license key", metavar="LICENSE_KEY")
     parser.add_argument("--deactivate", action="store_true", help="Deactivate this device")
     parser.add_argument("--license-status", action="store_true", help="Show license status")
@@ -87,13 +89,27 @@ Examples:
     if args.mcp is not None:
         from mcp_server import main as mcp_main
         import sys as _sys
-        # Rebuild args for mcp_server
         mcp_args = ["mcp_server.py"]
         if args.mcp == "http":
             mcp_args.append("--http")
             mcp_args.extend(["--port", str(args.mcp_port)])
         _sys.argv = mcp_args
         mcp_main()
+        return
+
+    # ── Web GUI ──────────────────────────────────────────
+    if args.gui is not None:
+        try:
+            import flask
+        except ImportError:
+            print("  [-] Flask is required for the web GUI.")
+            print("  [+] Install with: pip install flask")
+            sys.exit(1)
+        from web_gui import main as gui_main
+        import sys as _sys
+        gui_args = ["web_gui.py", "--port", str(args.gui), "--host", args.gui_host]
+        _sys.argv = gui_args
+        gui_main()
         return
 
     # ── License handling ──────────────────────────────────

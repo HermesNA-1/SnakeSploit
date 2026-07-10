@@ -190,6 +190,7 @@ class SnakeSploitConsole(cmd.Cmd):
 {Colors.CYAN}─── MCP / AI Integration ───{Colors.RESET}
   mcp                  Start MCP server (stdio mode for AI agents)
   mcp http [port]      Start MCP server over HTTP
+  gui [port]           Start premium web dashboard
 
 ─── System ───{Colors.RESET}
   shell <command>      Run a shell command
@@ -373,6 +374,27 @@ class SnakeSploitConsole(cmd.Cmd):
             print(f"{Colors.YELLOW}[!] This mode is for AI agent subprocess communication.{Colors.RESET}")
             server = MCPServer(transport="stdio")
             server.run_stdio()
+
+    def do_gui(self, arg):
+        """Start the SnakeSploit premium web dashboard.
+           Usage:
+             gui           Start on default port 5000
+             gui 8080      Start on a custom port
+             gui 8080 0.0.0.0  Start on custom port and bind address"""
+        try:
+            import flask
+        except ImportError:
+            print(f"{Colors.RED}[-] Flask is required. Install with: pip install flask{Colors.RESET}")
+            return
+        from web_gui import main as gui_main
+        import sys as _sys
+        args = arg.strip().split()
+        port = args[0] if args else "5000"
+        host = args[1] if len(args) > 1 else "0.0.0.0"
+        print(f"{Colors.CYAN}[*] Starting SnakeSploit Web GUI on http://{host}:{port}{Colors.RESET}")
+        print(f"{Colors.YELLOW}[!] Press Ctrl+C to stop.{Colors.RESET}")
+        _sys.argv = ["web_gui.py", "--port", str(port), "--host", host]
+        gui_main()
 
     def do_update(self, arg):
         """Update everything: pull latest code from GitHub, then fetch CVEs.

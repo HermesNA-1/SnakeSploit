@@ -9,7 +9,7 @@ import sys
 import subprocess
 import threading
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import wraps
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -231,9 +231,172 @@ def api_console():
         output = '\n'.join([f"  Port {r['port']}: {r['state']}" for r in results]) if results else "No open ports"
         return jsonify({'output': output})
     elif cmd == 'help':
-        return jsonify({'output': "Commands: search <q>, cve stats, scan <host> [ports], payloads"})
+        return jsonify({'output': "Commands: search <q>, cve stats, scan <host> [ports], payloads, report, targets, sessions, status"})
     else:
         return jsonify({'error': f"Unknown command: {cmd}"})
+
+
+# ── Powerful Features ──
+
+@app.route('/api/report')
+def api_report():
+    """Generate a comprehensive HTML engagement report."""
+    b = load_backend()
+    tm = b['tm']; cve = b['cve']
+
+    all_targets = tm.all()
+    total_services = sum(len(t.services) for t in all_targets)
+    total_vulns = sum(len(t.vulnerabilities) for t in all_targets)
+    cve_stats = cve.get_statistics()
+    top_cves = sorted(cve.index, key=lambda x: x.get('score', 0), reverse=True)[:10]
+
+    report_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")
+    targets_html = ""
+    for t in all_targets:
+        svcs = "".join([f"<tr><td>{p}</td><td>{s.state}</td></tr>" for p, s in t.services.items()])
+        vulns = "".join([f"<li><strong>{v['cve_id']}</strong>: {v['description'][:100]}</li>" for v in t.vulnerabilities])
+        targets_html += f"""
+        <div class="target">
+            <h3>🎯 {t.host}</h3>
+            <p><strong>OS:</strong> {t.os} | <strong>Services:</strong> {len(t.services)} | <strong>Vulns:</strong> {len(t.vulnerabilities)}</p>
+            <table><tr><th>Port</th><th>State</th></tr>{svcs}</table>
+            <ul>{vulns}</ul>
+        </div>
+        """
+
+    html = f"""<!DOCTYPE html><html lang="en"><head>
+    <meta charset="UTF-8"><title>SnakeSploit Engagement Report</title>
+    <style>
+    body {{ font-family: Inter, -apple-system, sans-serif; background: #0a0a1a; color: #e8e8f0; padding: 40px; max-width: 900px; margin: 0 auto; }}
+    h1 {{ font-size: 32px; margin-bottom: 4px; }} h1 span {{ color: #00ff88; }}
+    .meta {{ color: #8888aa; font-size: 14px; margin-bottom: 32px; }}
+    .stats {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 32px; }}
+    .stat {{ background: rgba(20,20,50,0.6); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 16px; text-align: center; }}
+    .stat .n {{ font-size: 24px; font-weight: 700; color: #00ff88; }}
+    .stat .l {{ font-size: 11px; color: #8888aa; text-transform: uppercase; }}
+    .target {{ background: rgba(20,20,50,0.6); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 20px; margin-bottom: 16px; }}
+    .target h3 {{ margin-bottom: 8px; }}
+    table {{ width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 13px; }}
+    th, td {{ padding: 6px 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }}
+    th {{ color: #8888aa; font-size: 11px; text-transform: uppercase; }}
+    ul {{ margin: 8px 0; padding-left: 20px; }}
+    li {{ margin: 4px 0; font-size: 13px; color: #8888aa; }}
+    .footer {{ text-align: center; color: #555577; font-size: 12px; margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); }}
+    </style></head><body>
+    <h1>🐍 Snake<span>Sploit</span></h1>
+    <p class="meta">Engagement Report — Generated {report_time}</p>
+    <div class="stats">
+        <div class="stat"><div class="n">{len(all_targets)}</div><div class="l">Targets</div></div>
+        <div class="stat"><div class="n">{total_services}</div><div class="l">Services</div></div>
+        <div class="stat"><div class="n">{total_vulns}</div><div class="l">Vulnerabilities</div></div>
+        <div class="stat"><div class="n">{cve_stats['total_cves']}</div><div class="l">CVEs Cached</div></div>
+    </div>
+    <h2>Targets</h2>
+    {targets_html if targets_html else '<p style="color:#555577">No targets yet.</p>'}
+    <h2>Top CVEs</h2>
+    <table><tr><th>CVE ID</th><th>Score</th><th>Severity</th></tr>
+    {''.join([f'<tr><td>{c["id"]}</td><td>{c.get("score",0)}</td><td>{c.get("severity","UNKNOWN")}</td></tr>' for c in top_cves])}
+    </table>
+    <div class="footer">SnakeSploit — Open Source Penetration Testing Framework</div>
+    </body></html>"""
+    return jsonify({'html': html, 'targets': len(all_targets), 'services': total_services, 'vulnerabilities': total_vulns})
+
+
+@app.route('/api/scan/deep', methods=['POST'])
+def api_scan_deep():
+    """Deep scan with service detection and banner grabbing."""
+    b = load_backend()
+    data = request.get_json()
+    host = data.get('host', '')
+    if not host:
+        return jsonify({'error': 'No host'}), 400
+
+    # Extended port list
+    all_ports = [21, 22, 23, 25, 53, 80, 110, 111, 135, 139, 143, 443, 445, 993, 995,
+                 1433, 1521, 2049, 3306, 3389, 5432, 5900, 5985, 5986, 6379, 8080, 8443, 9090, 27017, 49152, 49154]
+
+    results = b['scanner'].scan(host, all_ports)
+
+    # Attempt banner grab on open ports
+    from lib.network import NovaSocket
+    enriched = []
+    for r in results:
+        banner = ""
+        try:
+            sock = NovaSocket.create_connection(host, r['port'], timeout=2)
+            if sock:
+                sock.send(b"\r\n")
+                banner = sock.recv(256).decode(errors='replace').strip()[:80]
+                sock.close()
+        except:
+            pass
+        enriched.append({'port': r['port'], 'state': r['state'], 'banner': banner})
+
+    # Save to target DB
+    if enriched:
+        from core.target import Service
+        t = b['tm'].add(host)
+        for r in enriched:
+            svc = Service(port=r['port'], state=r['state'], banner=r['banner'])
+            t.add_service(svc)
+        b['tm'].save()
+
+    return jsonify({'target': host, 'results': enriched, 'count': len(enriched)})
+
+
+@app.route('/api/modules/run', methods=['POST'])
+def api_modules_run():
+    """Run a module against a target."""
+    b = load_backend()
+    data = request.get_json()
+    module_name = data.get('module', '')
+    target = data.get('target', '')
+    port = data.get('port', 80)
+
+    if not module_name or not target:
+        return jsonify({'error': 'Module name and target required'}), 400
+
+    results = b['mm'].search(module_name)
+    if not results:
+        return jsonify({'error': f"Module '{module_name}' not found"}), 404
+
+    _, mod = results[0]
+    fresh = type(mod)()
+    fresh.setup(RHOSTS=target, RPORT=str(port))
+    try:
+        fresh.validate()
+        output = fresh.run()
+        return jsonify({
+            'module': module_name, 'target': target, 'port': port,
+            'result': output, 'success': True,
+        })
+    except Exception as e:
+        return jsonify({'error': str(e), 'module': module_name, 'success': False}), 500
+
+
+@app.route('/api/system')
+def api_system():
+    """Get system status and health."""
+    b = load_backend()
+    cve_stats = b['cve'].get_statistics()
+    modules_count = len(b['mm'].modules)
+    targets_count = len(b['tm'].all())
+    sessions_count = b['sm'].summary()['active']
+
+    # Check Strix
+    strix_ok = b['strix'].is_configured()
+
+    return jsonify({
+        'version': '1.0.0',
+        'uptime': 'online',
+        'modules_loaded': modules_count,
+        'targets': targets_count,
+        'sessions': sessions_count,
+        'cves': cve_stats['total_cves'],
+        'strix_configured': strix_ok,
+        'platform': sys.platform,
+        'python_version': sys.version.split()[0],
+    })
 
 
 # ── Main ──
